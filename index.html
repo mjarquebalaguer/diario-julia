@@ -186,12 +186,14 @@
 
   .tab {
     flex: 1;
-    padding: 10px 14px;
+    padding: 10px 6px;
     border-radius: 999px;
     background: var(--card);
     color: var(--ink-soft);
     font-weight: 700;
-    font-size: .95rem;
+    font-size: .87rem;
+    text-align: center;
+    white-space: nowrap;
     box-shadow: var(--shadow);
     transition: background .2s, color .2s;
   }
@@ -717,12 +719,14 @@
   <nav class="tabs" role="tablist">
     <button class="tab display" id="tab-diario" role="tab" aria-selected="true">📖 Diario</button>
     <button class="tab display" id="tab-alimentos" role="tab" aria-selected="false">🥕 Alimentos</button>
+    <button class="tab display" id="tab-ajustes" role="tab" aria-selected="false">⚙️ Ajustes</button>
   </nav>
 </header>
 
 <main>
   <section id="vista-diario"></section>
   <section id="vista-alimentos" hidden></section>
+  <section id="vista-ajustes" hidden></section>
 </main>
 
 <button class="fab" id="btn-nueva" aria-label="Apuntar una comida">＋</button>
@@ -1020,7 +1024,14 @@
       '</div>' +
       (filas
         ? '<div class="lista-alimentos">' + filas + '</div>'
-        : '<div class="vacio"><span class="icono">🥕</span>Cuando apuntes comidas en el diario, aquí saldrá la lista de todo lo que Júlia ha probado, en orden.</div>') +
+        : '<div class="vacio"><span class="icono">🥕</span>Cuando apuntes comidas en el diario, aquí saldrá la lista de todo lo que Júlia ha probado, en orden.</div>');
+  }
+
+  /* ── Vista: Ajustes ─────────────────────── */
+
+  function pintarAjustes() {
+    var cont = $('vista-ajustes');
+    cont.innerHTML =
       htmlSync() +
       '<div class="backup">' +
         '<h2 class="display">💾 Copia de seguridad</h2>' +
@@ -1041,20 +1052,24 @@
   function pintarTodo() {
     pintarDiario();
     pintarAlimentos();
+    pintarAjustes();
   }
 
   /* ── Pestañas ───────────────────────────── */
 
   function cambiarPestana(cual) {
-    var esDiario = cual === 'diario';
-    $('tab-diario').setAttribute('aria-selected', esDiario);
-    $('tab-alimentos').setAttribute('aria-selected', !esDiario);
-    $('vista-diario').hidden = !esDiario;
-    $('vista-alimentos').hidden = esDiario;
+    $('tab-diario').setAttribute('aria-selected', cual === 'diario');
+    $('tab-alimentos').setAttribute('aria-selected', cual === 'alimentos');
+    $('tab-ajustes').setAttribute('aria-selected', cual === 'ajustes');
+    $('vista-diario').hidden = cual !== 'diario';
+    $('vista-alimentos').hidden = cual !== 'alimentos';
+    $('vista-ajustes').hidden = cual !== 'ajustes';
   }
 
   $('tab-diario').addEventListener('click', function () { cambiarPestana('diario'); });
   $('tab-alimentos').addEventListener('click', function () { cambiarPestana('alimentos'); });
+  $('tab-ajustes').addEventListener('click', function () { cambiarPestana('ajustes'); });
+
 
   /* ── Formulario ─────────────────────────── */
 
