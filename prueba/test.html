@@ -2498,6 +2498,7 @@
     g.fillStyle = color; g.fillRect(0, 0, an, al);
     return new Promise(function (res) { c.toBlob(res, 'image/jpeg', 0.8); });
   }
+  var guardadas = 0;
   async function apuntar(desdePestana, cosa, reaccion, fecha, conFotos) {
     toca($('tab-' + desdePestana));
     await esperar(120);
@@ -2519,7 +2520,14 @@
     }
     $('campo-nota').value = 'Nota de ' + cosa;
     toca($('btn-guardar'));
-    await esperar(500);
+    guardadas++;
+    /* Esperamos a que la entrada exista de verdad: con tiempo virtual,
+       la base de datos tarda mas de lo que dice el reloj */
+    var n = guardadas;
+    await hasta(function () {
+      return $('vista-diario').querySelectorAll('article.dia').length === n;
+    }, 200);
+    await esperar(150);
   }
 
   window.addEventListener('error', function (e) { R.push('ERRORJS ' + e.message); });
