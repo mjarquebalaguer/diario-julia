@@ -38,6 +38,7 @@
     --crema-ink: #77621F;
     --coral: #F2AF9F;
     --on-coral: #5C3026;
+    --coral-ink: #A85843;
     --green: #5A7A42;
     --green-soft: #EDF4E1;
     --regular-soft: #EFF0E8;
@@ -64,6 +65,7 @@
       --crema-ink: #EFDFA3;
       --coral: #E8A091;
       --on-coral: #33201B;
+      --coral-ink: #F0B3A5;
       --green: #B4D19C;
       --green-soft: #37422E;
       --regular-soft: #3A4235;
@@ -90,6 +92,7 @@
     --crema-ink: #77621F;
     --coral: #F2AF9F;
     --on-coral: #5C3026;
+    --coral-ink: #A85843;
     --green: #5A7A42;
     --green-soft: #EDF4E1;
     --regular-soft: #EFF0E8;
@@ -115,6 +118,7 @@
     --crema-ink: #EFDFA3;
     --coral: #E8A091;
     --on-coral: #33201B;
+    --coral-ink: #F0B3A5;
     --green: #B4D19C;
     --green-soft: #37422E;
     --regular-soft: #3A4235;
@@ -249,6 +253,8 @@
     font-size: 1.05rem;
     color: var(--accent-ink);
   }
+
+  .fecha.de-lugar { color: var(--coral-ink); }
 
   .fecha .hoy-etiqueta {
     font-size: .75rem;
@@ -1301,55 +1307,69 @@
       return;
     }
 
-    var novedadComida = ultimaNovedad('comida');
-    var novedadLugar = ultimaNovedad('lugar');
-    var lista = entradas.slice().sort(function (a, b) {
+    var novedades = { comida: ultimaNovedad('comida'), lugar: ultimaNovedad('lugar') };
+    cont.innerHTML = ordenadas(entradas).map(function (e) {
+      return tarjetaEntrada(e, novedades);
+    }).join('');
+  }
+
+  /* De más reciente a más antigua */
+  function ordenadas(lista) {
+    return lista.slice().sort(function (a, b) {
       if (a.fecha !== b.fecha) return a.fecha < b.fecha ? 1 : -1;
       return b.creado - a.creado;
     });
+  }
 
+  /* La misma tarjeta sirve para el diario de comidas y el de lugares */
+  function tarjetaEntrada(e, novedades) {
+    var lugar = esLugar(e);
+    var novedad = novedades[lugar ? 'lugar' : 'comida'] || {};
     var hoy = hoyISO();
-    var html = lista.map(function (e) {
-      var lugar = esLugar(e);
-      var novedad = lugar ? novedadLugar : novedadComida;
 
-      var chips = (e.alimentos || []).map(function (a) {
-        var clave = normalizar(a.n);
-        var esNueva = novedad.id === e.id && novedad.claves && novedad.claves[clave];
-        return '<span class="chip' + (lugar ? ' lugar' : '') + (esNueva ? ' nuevo' : '') + '">' +
-          '<span>' + esc(a.e) + '</span>' + esc(a.n) + '</span>';
-      }).join('');
-
-      var fotos = (e.fotos || []).map(function (f, i) {
-        var foto = normFoto(f);
-        return '<div class="foto-caja' + (foto.entera ? ' entera' : '') + '" data-ver="' + e.id + ':' + i + '">' +
-          '<img src="' + foto.src + '" alt="Foto de ' + (lugar ? 'la salida' : 'la comida') +
-          '" style="' + estiloFoto(foto) + '" loading="lazy"></div>';
-      }).join('');
-
-      return '<article class="dia">' +
-        '<div class="dia-cabecera">' +
-          '<div class="fecha display">' + fechaBonita(e.fecha) +
-            (e.fecha === hoy ? '<span class="hoy-etiqueta">HOY</span>' : '') + '</div>' +
-          '<div class="acciones">' +
-            '<button class="accion-btn" data-editar="' + e.id + '" aria-label="Editar">✏️</button>' +
-            '<button class="accion-btn" data-borrar="' + e.id + '" aria-label="Borrar">🗑️</button>' +
-          '</div>' +
-        '</div>' +
-        (chips ? '<div class="chips">' + chips + '</div>' : '') +
-        (e.reaccion ? '<div class="reaccion ' + e.reaccion + '">' + textoReaccion(e.reaccion) + '</div>' : '') +
-        (e.nota ? '<p class="nota">' + esc(e.nota) + '</p>' : '') +
-        (fotos ? '<div class="fotos">' + fotos + '</div>' : '') +
-      '</article>';
+    var chips = (e.alimentos || []).map(function (a) {
+      var clave = normalizar(a.n);
+      var esNueva = novedad.id === e.id && novedad.claves && novedad.claves[clave];
+      return '<span class="chip' + (lugar ? ' lugar' : '') + (esNueva ? ' nuevo' : '') + '">' +
+        '<span>' + esc(a.e) + '</span>' + esc(a.n) + '</span>';
     }).join('');
 
-    cont.innerHTML = html;
+    var fotos = (e.fotos || []).map(function (f, i) {
+      var foto = normFoto(f);
+      return '<div class="foto-caja' + (foto.entera ? ' entera' : '') + '" data-ver="' + e.id + ':' + i + '">' +
+        '<img src="' + foto.src + '" alt="Foto de ' + (lugar ? 'la salida' : 'la comida') +
+        '" style="' + estiloFoto(foto) + '" loading="lazy"></div>';
+    }).join('');
+
+    return '<article class="dia">' +
+      '<div class="dia-cabecera">' +
+        '<div class="fecha display' + (lugar ? ' de-lugar' : '') + '">' + fechaBonita(e.fecha) +
+          (e.fecha === hoy ? '<span class="hoy-etiqueta">HOY</span>' : '') + '</div>' +
+        '<div class="acciones">' +
+          '<button class="accion-btn" data-editar="' + e.id + '" aria-label="Editar">✏️</button>' +
+          '<button class="accion-btn" data-borrar="' + e.id + '" aria-label="Borrar">🗑️</button>' +
+        '</div>' +
+      '</div>' +
+      (chips ? '<div class="chips">' + chips + '</div>' : '') +
+      (e.reaccion ? '<div class="reaccion ' + e.reaccion + '">' + textoReaccion(e.reaccion) + '</div>' : '') +
+      (e.nota ? '<p class="nota">' + esc(e.nota) + '</p>' : '') +
+      (fotos ? '<div class="fotos">' + fotos + '</div>' : '') +
+    '</article>';
   }
 
   /* ── Vista: Alimentos ───────────────────── */
 
   /* Filtro activo de cada pestaña: null = todo */
   var filtros = { comida: null, lugar: null };
+
+  function botonesFiltro(tipo, activo) {
+    var botones = [{ id: null, cara: '✨', texto: 'Todo' }].concat(REACCIONES);
+    return botones.map(function (b) {
+      return '<button class="filtro' + (b.id ? ' f-' + b.id : '') + '" data-filtro="' + (b.id || '') +
+        '" data-tipo="' + tipo + '" aria-pressed="' + (activo === b.id) + '">' +
+        b.cara + ' ' + b.texto + '</button>';
+    }).join('');
+  }
 
   function pintarListaDe(tipo) {
     var esL = tipo === 'lugar';
@@ -1382,15 +1402,7 @@
       (e.alimentos || []).forEach(function (a) { sinFiltro[normalizar(a.n)] = true; });
     });
 
-    var botones = [{ id: null, cara: '✨', texto: 'Todo' }].concat(REACCIONES.map(function (r) {
-      return { id: r.id, cara: r.cara, texto: r.texto };
-    }));
-
-    var htmlFiltros = '<div class="filtros">' + botones.map(function (b) {
-      return '<button class="filtro' + (b.id ? ' f-' + b.id : '') + '" data-filtro="' + (b.id || '') +
-        '" data-tipo="' + tipo + '" aria-pressed="' + (filtro === b.id) + '">' +
-        b.cara + ' ' + b.texto + '</button>';
-    }).join('') + '</div>';
+    var htmlFiltros = '<div class="filtros">' + botonesFiltro(tipo, filtro) + '</div>';
 
     var filas = lista.map(function (a, i) {
       return '<div class="alimento-fila">' +
@@ -1420,7 +1432,44 @@
   }
 
   function pintarAlimentos() { pintarListaDe('comida'); }
-  function pintarLugares() { pintarListaDe('lugar'); }
+
+  /* ── Vista: Lugares (su propio diario) ──── */
+
+  function pintarLugares() {
+    var cont = $('vista-lugares');
+    var propias = entradas.filter(esLugar);
+    var filtro = filtros.lugar;
+
+    var sitios = {};
+    var dias = {};
+    propias.forEach(function (e) {
+      dias[e.fecha] = true;
+      (e.alimentos || []).forEach(function (a) { sitios[normalizar(a.n)] = true; });
+    });
+
+    var htmlFiltros = '<div class="filtros">' + botonesFiltro('lugar', filtro) + '</div>';
+
+    var visibles = ordenadas(propias).filter(function (e) {
+      return !filtro || e.reaccion === filtro;
+    });
+
+    var novedades = { lugar: ultimaNovedad('lugar') };
+    var tarjetas = visibles.map(function (e) { return tarjetaEntrada(e, novedades); }).join('');
+
+    var vacio = filtro
+      ? '<div class="vacio"><span class="icono">🔍</span>Ninguna salida con esa carita todavía.<br>Prueba con otro filtro.</div>'
+      : '<div class="vacio"><span class="icono">📍</span>Todavía no hay ninguna salida apuntada.<br>Toca el botón <strong>＋</strong> para apuntar el primer sitio que ha conocido Júlia.</div>';
+
+    cont.innerHTML =
+      '<div class="stats">' +
+        '<div class="stat coral"><div class="num display">' + Object.keys(sitios).length +
+          '</div><div class="desc">sitios conocidos</div></div>' +
+        '<div class="stat coral"><div class="num display">' + Object.keys(dias).length +
+          '</div><div class="desc">días de salida</div></div>' +
+      '</div>' +
+      (propias.length ? htmlFiltros : '') +
+      (tarjetas || vacio);
+  }
 
   document.addEventListener('click', function (ev) {
     var b = ev.target.closest('[data-filtro]');
@@ -1428,7 +1477,8 @@
     var tipo = b.dataset.tipo;
     var valor = b.dataset.filtro || null;
     filtros[tipo] = filtros[tipo] === valor ? null : valor;
-    pintarListaDe(tipo);
+    if (tipo === 'lugar') pintarLugares();
+    else pintarListaDe(tipo);
   });
 
   /* ── Vista: Ajustes ─────────────────────── */
@@ -1847,7 +1897,7 @@
       btn.disabled = false;
       var eraEdicion = !!editandoId;
       cerrarHoja();
-      cambiarPestana('diario');
+      cambiarPestana(entrada.tipo === 'lugar' ? 'lugares' : 'diario');
       pintarTodo();
       aviso(eraEdicion ? 'Entrada actualizada ✓' : 'Guardado en el diario ✓');
       sincronizar();
@@ -1861,7 +1911,7 @@
 
   var confirmandoBorrar = null;
 
-  $('vista-diario').addEventListener('click', function (ev) {
+  function manejarTarjetas(ev) {
     var editar = ev.target.closest('[data-editar]');
     if (editar) {
       var entrada = entradas.find(function (e) { return e.id === editar.dataset.editar; });
@@ -1901,7 +1951,11 @@
       var partes = foto.dataset.ver.split(':');
       abrirVisor(partes[0], Number(partes[1]));
     }
-  });
+  }
+
+  /* Las tarjetas salen en los dos diarios: el general y el de lugares */
+  $('vista-diario').addEventListener('click', manejarTarjetas);
+  $('vista-lugares').addEventListener('click', manejarTarjetas);
 
   /* ── Visor de fotos ─────────────────────── */
 
