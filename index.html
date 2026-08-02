@@ -338,17 +338,7 @@
     margin-top: 14px;
   }
 
-  .fotos img {
-    width: 100%;
-    aspect-ratio: 1;
-    object-fit: cover;
-    border-radius: 14px;
-    display: block;
-    cursor: pointer;
-    max-width: 100%;
-  }
-
-  .fotos img:only-child { grid-column: 1 / -1; aspect-ratio: 4 / 3; }
+  /* Cada foto vive dentro de .foto-caja, que es la que recorta (ver más abajo) */
 
   /* ── Pestaña Alimentos ────────────────────── */
 
@@ -630,18 +620,26 @@
 
   .miniatura { position: relative; }
 
+  .miniatura {
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--regular-soft);
+  }
+
   .miniatura img {
     width: 100%;
     aspect-ratio: 1;
     object-fit: cover;
-    border-radius: 12px;
     display: block;
+    transform-origin: center center;
   }
+
+  .miniatura.entera img { object-fit: contain; }
 
   .miniatura button {
     position: absolute;
-    top: -6px;
-    right: -6px;
+    top: 5px;
+    right: 5px;
     width: 26px;
     height: 26px;
     border-radius: 999px;
@@ -680,10 +678,40 @@
 
   .visor.abierto { display: grid; }
 
-  .visor img {
+  .visor-ventana {
+    width: 100%;
+    height: 88dvh;
+    overflow: hidden;
+    touch-action: pan-y;
+  }
+
+  .visor-pista {
+    display: flex;
+    height: 100%;
+    will-change: transform;
+  }
+
+  .visor-pista.animada { transition: transform .3s cubic-bezier(.22, .61, .36, 1); }
+
+  .visor-diapo {
+    flex: 0 0 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    padding: 0 8px;
+  }
+
+  .visor-diapo img {
     max-width: 100%;
-    max-height: 88dvh;
+    max-height: 100%;
     border-radius: 16px;
+    display: block;
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .visor-pista.animada { transition: none; }
   }
 
   .visor-flecha {
@@ -705,6 +733,7 @@
   .visor-flecha.izq { left: 10px; }
   .visor-flecha.der { right: 10px; }
   .visor-flecha[hidden] { display: none; }
+  .visor-flecha:disabled { opacity: .25; }
 
   .visor-contador {
     position: absolute;
@@ -768,9 +797,45 @@
     display: block;
     user-select: none;
     -webkit-user-drag: none;
+    transform-origin: center center;
   }
 
-  .encuadre-marco.entera img { object-fit: contain; }
+  .encuadre-marco.entera img { object-fit: contain; transform: none !important; }
+
+  .zoom-fila {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .zoom-fila input[type="range"] {
+    flex: 1;
+    accent-color: var(--accent);
+    height: 26px;
+  }
+
+  .zoom-fila[hidden] { display: none; }
+
+  /* Las fotos del diario se recortan dentro de su cajita */
+  .foto-caja {
+    aspect-ratio: 1;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--regular-soft);
+    cursor: pointer;
+  }
+
+  .foto-caja img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transform-origin: center center;
+  }
+
+  .foto-caja.entera img { object-fit: contain; }
+
+  .fotos .foto-caja:only-child { grid-column: 1 / -1; aspect-ratio: 4 / 3; }
 
   .encuadre-botones { display: flex; gap: 10px; }
 
@@ -974,7 +1039,9 @@
 <div class="visor" id="visor">
   <button class="cerrar" id="visor-cerrar" aria-label="Cerrar">✕</button>
   <button class="visor-flecha izq" id="visor-antes" aria-label="Foto anterior">‹</button>
-  <img id="visor-img" alt="Foto del diario">
+  <div class="visor-ventana" id="visor-ventana">
+    <div class="visor-pista" id="visor-pista"></div>
+  </div>
   <button class="visor-flecha der" id="visor-despues" aria-label="Foto siguiente">›</button>
   <div class="visor-contador" id="visor-contador"></div>
 </div>
@@ -985,6 +1052,10 @@
     <p class="encuadre-pista" id="encuadre-pista">Arrastra la foto para elegir qué parte se ve.</p>
     <div class="encuadre-marco" id="encuadre-marco">
       <img id="encuadre-img" alt="Foto que estás ajustando">
+    </div>
+    <div class="zoom-fila" id="zoom-fila">
+      <span aria-hidden="true">🔍</span>
+      <input type="range" id="encuadre-zoom" min="100" max="400" value="100" step="1" aria-label="Zoom de la foto">
     </div>
     <div class="encuadre-botones">
       <button class="btn-secundario" id="encuadre-entera">🖼️ Ver foto entera</button>
@@ -1054,10 +1125,25 @@
     return tipo === 'lugar' ? '📍' : '🍽️';
   }
 
-  /* Las fotos antiguas se guardaron como texto; las nuevas llevan encuadre */
+  /* Las fotos antiguas se guardaron como texto y las de ayer con «pos»;
+     las nuevas llevan zoom (z) y desplazamiento (x, y) en fracciones del cuadro. */
   function normFoto(f) {
-    if (typeof f === 'string') return { src: f, pos: '50% 50%', entera: false };
-    return { src: f.src, pos: f.pos || '50% 50%', entera: !!f.entera };
+    if (typeof f === 'string') return { src: f, pos: '50% 50%', z: 1, x: 0, y: 0, entera: false };
+    return {
+      src: f.src,
+      pos: f.pos || '50% 50%',
+      z: f.z || 1,
+      x: f.x || 0,
+      y: f.y || 0,
+      entera: !!f.entera
+    };
+  }
+
+  /* Un mismo estilo sirve para el diario, las miniaturas y el editor */
+  function estiloFoto(foto) {
+    if (foto.entera) return '';
+    return 'object-position:' + foto.pos + ';transform:scale(' + foto.z + ') translate(' +
+      (foto.x * 100) + '%,' + (foto.y * 100) + '%)';
   }
 
   function esLugar(e) { return e.tipo === 'lugar'; }
@@ -1232,11 +1318,9 @@
 
       var fotos = (e.fotos || []).map(function (f, i) {
         var foto = normFoto(f);
-        var estilo = foto.entera
-          ? 'object-fit:contain;background:var(--regular-soft)'
-          : 'object-position:' + foto.pos;
-        return '<img src="' + foto.src + '" alt="Foto de ' + (lugar ? 'la salida' : 'la comida') +
-          '" style="' + estilo + '" data-ver="' + e.id + ':' + i + '" loading="lazy">';
+        return '<div class="foto-caja' + (foto.entera ? ' entera' : '') + '" data-ver="' + e.id + ':' + i + '">' +
+          '<img src="' + foto.src + '" alt="Foto de ' + (lugar ? 'la salida' : 'la comida') +
+          '" style="' + estiloFoto(foto) + '" loading="lazy"></div>';
       }).join('');
 
       return '<article class="dia">' +
@@ -1413,11 +1497,8 @@
   function pintarMiniaturas() {
     $('miniaturas').innerHTML = formFotos.map(function (f, i) {
       var foto = normFoto(f);
-      var estilo = foto.entera
-        ? 'object-fit:contain;background:var(--regular-soft)'
-        : 'object-position:' + foto.pos;
-      return '<div class="miniatura">' +
-        '<img src="' + foto.src + '" alt="Foto elegida" style="' + estilo + '" data-encuadrar="' + i + '">' +
+      return '<div class="miniatura' + (foto.entera ? ' entera' : '') + '">' +
+        '<img src="' + foto.src + '" alt="Foto elegida" style="' + estiloFoto(foto) + '" data-encuadrar="' + i + '">' +
         '<button data-quitar-foto="' + i + '" aria-label="Quitar foto">✕</button></div>';
     }).join('');
     $('pista-fotos').hidden = !formFotos.length;
@@ -1548,27 +1629,57 @@
   /* ── Ajustar el encuadre de una foto ────── */
 
   var encuadreIdx = -1;
-  var encuadrePos = { x: 50, y: 50 };
+  var encZ = 1, encX = 0, encY = 0;
   var encuadreEntera = false;
+  var encNat = { w: 1, h: 1 };
+
+  /* No dejamos que la foto se despegue de los bordes del cuadro */
+  function limitarEncuadre() {
+    var caja = $('encuadre-marco').getBoundingClientRect();
+    if (!caja.width) return;
+    var escala = Math.max(caja.width / encNat.w, caja.height / encNat.h);
+    var anchoCubre = encNat.w * escala;
+    var altoCubre = encNat.h * escala;
+    var topeX = Math.max(0, (anchoCubre * encZ - caja.width) / (2 * caja.width * encZ));
+    var topeY = Math.max(0, (altoCubre * encZ - caja.height) / (2 * caja.height * encZ));
+    encX = Math.min(topeX, Math.max(-topeX, encX));
+    encY = Math.min(topeY, Math.max(-topeY, encY));
+  }
 
   function aplicarEncuadre() {
     var marco = $('encuadre-marco');
     var img = $('encuadre-img');
     marco.classList.toggle('entera', encuadreEntera);
-    img.style.objectPosition = encuadrePos.x + '% ' + encuadrePos.y + '%';
+    if (!encuadreEntera) {
+      limitarEncuadre();
+      img.style.transform = 'scale(' + encZ + ') translate(' + (encX * 100) + '%,' + (encY * 100) + '%)';
+    }
+    $('encuadre-zoom').value = Math.round(encZ * 100);
+    $('zoom-fila').hidden = encuadreEntera;
     $('encuadre-entera').textContent = encuadreEntera ? '✂️ Recortar cuadrada' : '🖼️ Ver foto entera';
     $('encuadre-pista').textContent = encuadreEntera
       ? 'Se verá la foto completa, sin recortar.'
-      : 'Arrastra la foto para elegir qué parte se ve.';
+      : 'Arrastra la foto con el dedo y usa el zoom para ajustarla.';
   }
 
   function abrirEncuadre(i) {
     var foto = normFoto(formFotos[i]);
     encuadreIdx = i;
     encuadreEntera = foto.entera;
-    var trozos = (foto.pos || '50% 50%').split(' ');
-    encuadrePos = { x: parseFloat(trozos[0]) || 50, y: parseFloat(trozos[1]) || 50 };
-    $('encuadre-img').src = foto.src;
+    encZ = foto.z;
+    encX = foto.x;
+    encY = foto.y;
+    var img = $('encuadre-img');
+    img.style.transform = '';
+    img.onload = function () {
+      encNat = { w: img.naturalWidth || 1, h: img.naturalHeight || 1 };
+      aplicarEncuadre();
+    };
+    img.src = foto.src;
+    img.style.objectPosition = foto.pos;
+    if (img.complete && img.naturalWidth) {
+      encNat = { w: img.naturalWidth, h: img.naturalHeight };
+    }
     aplicarEncuadre();
     $('encuadre').classList.add('abierto');
   }
@@ -1584,7 +1695,10 @@
     var foto = normFoto(formFotos[encuadreIdx]);
     formFotos[encuadreIdx] = {
       src: foto.src,
-      pos: Math.round(encuadrePos.x) + '% ' + Math.round(encuadrePos.y) + '%',
+      pos: foto.pos,
+      z: Math.round(encZ * 1000) / 1000,
+      x: Math.round(encX * 10000) / 10000,
+      y: Math.round(encY * 10000) / 10000,
       entera: encuadreEntera
     };
     pintarMiniaturas();
@@ -1594,43 +1708,74 @@
     var marco = $('encuadre-marco');
     var arrastrando = false;
     var ultimo = null;
-
-    function empezar(ev) {
-      if (encuadreEntera) return;
-      arrastrando = true;
-      ultimo = punto(ev);
-      marco.style.cursor = 'grabbing';
-    }
+    var pellizco = null;
 
     function punto(ev) {
       var t = ev.touches && ev.touches[0] ? ev.touches[0] : ev;
       return { x: t.clientX, y: t.clientY };
     }
 
+    function separacion(ev) {
+      var a = ev.touches[0], b = ev.touches[1];
+      return Math.sqrt(Math.pow(a.clientX - b.clientX, 2) + Math.pow(a.clientY - b.clientY, 2));
+    }
+
+    function empezar(ev) {
+      if (encuadreEntera) return;
+      if (ev.touches && ev.touches.length === 2) {
+        pellizco = { dist: separacion(ev), z0: encZ };
+        arrastrando = false;
+        return;
+      }
+      arrastrando = true;
+      ultimo = punto(ev);
+      marco.style.cursor = 'grabbing';
+    }
+
     function mover(ev) {
+      if (encuadreEntera) return;
+
+      if (pellizco && ev.touches && ev.touches.length === 2) {
+        ev.preventDefault();
+        var d = separacion(ev);
+        if (pellizco.dist > 0) {
+          encZ = Math.min(4, Math.max(1, pellizco.z0 * (d / pellizco.dist)));
+          aplicarEncuadre();
+        }
+        return;
+      }
+
       if (!arrastrando) return;
       ev.preventDefault();
       var p = punto(ev);
       var caja = marco.getBoundingClientRect();
-      /* Arrastrar hacia abajo debe enseñar la parte de arriba de la foto */
-      encuadrePos.x = Math.min(100, Math.max(0, encuadrePos.x - ((p.x - ultimo.x) / caja.width) * 130));
-      encuadrePos.y = Math.min(100, Math.max(0, encuadrePos.y - ((p.y - ultimo.y) / caja.height) * 130));
+      /* La foto sigue al dedo */
+      encX += (p.x - ultimo.x) / (caja.width * encZ);
+      encY += (p.y - ultimo.y) / (caja.height * encZ);
       ultimo = p;
       aplicarEncuadre();
     }
 
-    function soltar() {
+    function soltar(ev) {
+      if (ev && ev.touches && ev.touches.length > 0) return;
       arrastrando = false;
+      pellizco = null;
       marco.style.cursor = 'grab';
     }
 
     marco.addEventListener('mousedown', empezar);
     marco.addEventListener('touchstart', empezar, { passive: true });
     document.addEventListener('mousemove', mover);
-    document.addEventListener('touchmove', mover, { passive: false });
+    marco.addEventListener('touchmove', mover, { passive: false });
     document.addEventListener('mouseup', soltar);
     document.addEventListener('touchend', soltar);
+    document.addEventListener('touchcancel', soltar);
   })();
+
+  $('encuadre-zoom').addEventListener('input', function () {
+    encZ = Math.max(1, Number(this.value) / 100);
+    aplicarEncuadre();
+  });
 
   $('encuadre-entera').addEventListener('click', function () {
     encuadreEntera = !encuadreEntera;
@@ -1638,7 +1783,7 @@
   });
 
   $('encuadre-centrar').addEventListener('click', function () {
-    encuadrePos = { x: 50, y: 50 };
+    encZ = 1; encX = 0; encY = 0;
     encuadreEntera = false;
     aplicarEncuadre();
   });
@@ -1752,13 +1897,21 @@
   var visorFotos = [];
   var visorIdx = 0;
 
-  function pintarVisor() {
-    var foto = normFoto(visorFotos[visorIdx]);
-    $('visor-img').src = foto.src;
-    $('visor-contador').textContent = visorFotos.length > 1
-      ? (visorIdx + 1) + ' / ' + visorFotos.length : '';
-    $('visor-antes').hidden = visorFotos.length < 2;
-    $('visor-despues').hidden = visorFotos.length < 2;
+  function colocarPista(desplazamiento, animar) {
+    var pista = $('visor-pista');
+    pista.classList.toggle('animada', !!animar);
+    pista.style.transform = 'translate3d(calc(' + (-visorIdx * 100) + '% + ' +
+      (desplazamiento || 0) + 'px), 0, 0)';
+  }
+
+  function pintarVisor(animar) {
+    var varias = visorFotos.length > 1;
+    $('visor-contador').textContent = varias ? (visorIdx + 1) + ' / ' + visorFotos.length : '';
+    $('visor-antes').hidden = !varias;
+    $('visor-despues').hidden = !varias;
+    $('visor-antes').disabled = visorIdx === 0;
+    $('visor-despues').disabled = visorIdx === visorFotos.length - 1;
+    colocarPista(0, animar);
   }
 
   function abrirVisor(idEntrada, i) {
@@ -1766,20 +1919,25 @@
     if (!entrada || !entrada.fotos || !entrada.fotos.length) return;
     visorFotos = entrada.fotos;
     visorIdx = Math.min(Math.max(0, i), visorFotos.length - 1);
-    pintarVisor();
+    $('visor-pista').innerHTML = visorFotos.map(function (f) {
+      return '<div class="visor-diapo"><img src="' + normFoto(f).src + '" alt="Foto del diario"></div>';
+    }).join('');
+    pintarVisor(false);
     $('visor').classList.add('abierto');
   }
 
   function cerrarVisor() {
     $('visor').classList.remove('abierto');
-    $('visor-img').src = '';
+    $('visor-pista').innerHTML = '';
     visorFotos = [];
   }
 
   function moverVisor(paso) {
     if (visorFotos.length < 2) return;
-    visorIdx = (visorIdx + paso + visorFotos.length) % visorFotos.length;
-    pintarVisor();
+    var destino = visorIdx + paso;
+    if (destino < 0 || destino > visorFotos.length - 1) return;
+    visorIdx = destino;
+    pintarVisor(true);
   }
 
   $('visor-antes').addEventListener('click', function (ev) { ev.stopPropagation(); moverVisor(-1); });
@@ -1790,20 +1948,49 @@
     if (ev.target === $('visor')) cerrarVisor();
   });
 
-  $('visor-img').addEventListener('click', function (ev) { ev.stopPropagation(); });
+  $('visor-ventana').addEventListener('click', function (ev) { ev.stopPropagation(); });
 
-  /* Deslizar con el dedo para pasar de foto */
+  /* Deslizar: las fotos siguen al dedo y luego encajan solas */
   (function deslizarVisor() {
-    var x0 = null;
-    var v = $('visor');
-    v.addEventListener('touchstart', function (ev) {
+    var ventana = $('visor-ventana');
+    var x0 = null, y0 = null;
+    var arrastrando = false;
+
+    ventana.addEventListener('touchstart', function (ev) {
+      if (visorFotos.length < 2 || ev.touches.length !== 1) return;
       x0 = ev.touches[0].clientX;
+      y0 = ev.touches[0].clientY;
+      arrastrando = true;
+      colocarPista(0, false);
     }, { passive: true });
-    v.addEventListener('touchend', function (ev) {
-      if (x0 === null) return;
+
+    ventana.addEventListener('touchmove', function (ev) {
+      if (!arrastrando) return;
+      var dx = ev.touches[0].clientX - x0;
+      var dy = ev.touches[0].clientY - y0;
+      /* Si el gesto es claramente vertical, lo dejamos pasar */
+      if (Math.abs(dy) > Math.abs(dx)) return;
+      ev.preventDefault();
+      var freno = 1;
+      var enBorde = (visorIdx === 0 && dx > 0) || (visorIdx === visorFotos.length - 1 && dx < 0);
+      if (enBorde) freno = 0.35;
+      colocarPista(dx * freno, false);
+    }, { passive: false });
+
+    ventana.addEventListener('touchend', function (ev) {
+      if (!arrastrando) return;
+      arrastrando = false;
       var dx = ev.changedTouches[0].clientX - x0;
-      if (Math.abs(dx) > 50) moverVisor(dx < 0 ? 1 : -1);
-      x0 = null;
+      var minimo = Math.min(90, ventana.getBoundingClientRect().width * 0.22);
+      if (dx <= -minimo && visorIdx < visorFotos.length - 1) visorIdx++;
+      else if (dx >= minimo && visorIdx > 0) visorIdx--;
+      pintarVisor(true);
+    });
+
+    ventana.addEventListener('touchcancel', function () {
+      if (!arrastrando) return;
+      arrastrando = false;
+      pintarVisor(true);
     });
   })();
 
