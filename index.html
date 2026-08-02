@@ -217,6 +217,215 @@
     color: var(--on-coral);
   }
 
+  /* Cabecera con la ruedecita de ajustes */
+  .cabecera-fila {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .cabecera-texto { flex: 1; min-width: 0; }
+
+  .btn-ajustes {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    background: var(--card);
+    box-shadow: var(--shadow);
+    font-size: 1.15rem;
+    display: grid;
+    place-items: center;
+    margin-top: 2px;
+  }
+
+  .btn-ajustes:active { transform: scale(.94); }
+
+  /* Selector de vista: calendario / diario / lista */
+  .vistas {
+    display: flex;
+    gap: 3px;
+    margin-top: 10px;
+    background: var(--regular-soft);
+    border-radius: 999px;
+    padding: 3px;
+  }
+
+  .vista-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 8px 4px;
+    border-radius: 999px;
+    color: var(--ink-soft);
+    font-weight: 700;
+    font-size: .76rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background .2s, color .2s;
+  }
+
+  .vista-btn[aria-selected="true"] {
+    background: var(--card);
+    color: var(--ink);
+    box-shadow: var(--shadow);
+  }
+
+  /* ── Calendario ───────────────────────────── */
+
+  .mes-fila {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .mes-nombre {
+    font-size: 1.05rem;
+    text-align: center;
+    flex: 1;
+  }
+
+  .mes-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: var(--card);
+    box-shadow: var(--shadow);
+    font-size: 1.1rem;
+    display: grid;
+    place-items: center;
+    color: var(--ink-soft);
+  }
+
+  .mes-btn:disabled { opacity: .3; }
+
+  .semana-cabecera,
+  .rejilla-mes {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+  }
+
+  .semana-cabecera {
+    margin-bottom: 6px;
+  }
+
+  .semana-cabecera span {
+    text-align: center;
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+  }
+
+  .dia-celda {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 11px;
+    background: var(--card);
+    overflow: hidden;
+    display: block;
+    width: 100%;
+    box-shadow: 0 1px 4px rgba(90, 110, 70, .08);
+  }
+
+  .dia-celda.fuera { visibility: hidden; }
+
+  .dia-celda.vacio { background: var(--regular-soft); box-shadow: none; }
+
+  .dia-celda .num-dia {
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    font-size: .58rem;
+    font-weight: 800;
+    color: var(--ink-soft);
+    z-index: 2;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dia-celda.con-foto .num-dia {
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .7);
+  }
+
+  .dia-celda .foto-dia {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform-origin: center center;
+  }
+
+  .dia-celda .velo {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,.28), rgba(0,0,0,.05) 45%, rgba(0,0,0,.3));
+  }
+
+  .dia-celda .emojis-dia {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 1.15rem;
+    line-height: 1;
+    z-index: 2;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, .45);
+  }
+
+  .dia-celda .tira {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 5px;
+    z-index: 2;
+  }
+
+  .tira.encanto { background: var(--crema); }
+  .tira.bien    { background: var(--salvia); }
+  .tira.regular { background: var(--ink-soft); }
+  .tira.mal     { background: var(--danger); }
+
+  .dia-celda.hoy { outline: 2.5px solid var(--accent); outline-offset: -2.5px; }
+
+  .dia-celda.futuro {
+    background: var(--regular-soft);
+    border: 1.5px dashed var(--line);
+    box-shadow: none;
+  }
+
+  .dia-celda.futuro .foto-dia,
+  .dia-celda.futuro .emojis-dia { filter: grayscale(.85); opacity: .75; }
+
+  .leyenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 14px;
+    font-size: .72rem;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  .leyenda span { display: inline-flex; align-items: center; gap: 5px; }
+
+  .leyenda i {
+    width: 14px;
+    height: 8px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
+  /* Tarjetas dentro de la hoja de un día */
+  #dentro-dia .dia { box-shadow: none; border: 1.5px solid var(--line); }
+
   /* ── Contenido ────────────────────────────── */
 
   main {
@@ -460,11 +669,11 @@
     width: 64px;
     height: 64px;
     border-radius: 999px;
-    background: var(--coral);
-    color: var(--on-coral);
+    background: var(--accent);
+    color: var(--on-accent);
     font-size: 2rem;
     line-height: 1;
-    box-shadow: 0 6px 20px rgba(210, 140, 120, .38);
+    box-shadow: 0 6px 20px rgba(120, 160, 95, .42);
     display: grid;
     place-items: center;
     z-index: 30;
@@ -890,7 +1099,11 @@
 
   .stat.coral .num { color: var(--coral); }
 
-  .fab.lugar { background: var(--coral); color: var(--on-coral); }
+  .fab.lugar {
+    background: var(--coral);
+    color: var(--on-coral);
+    box-shadow: 0 6px 20px rgba(210, 140, 120, .42);
+  }
 
   .visor .cerrar {
     position: absolute;
@@ -1043,14 +1256,24 @@
 </head>
 <body>
 <header class="top">
-  <h1 class="display">Primeros alimentos de Júlia 👶🏻</h1>
-  <p class="subtitulo">Su diario de descubrimientos, bocado a bocado</p>
-  <nav class="tabs" role="tablist">
-    <button class="tab display" id="tab-diario" role="tab" aria-selected="true">📖 Diario</button>
-    <button class="tab display" id="tab-alimentos" role="tab" aria-selected="false">🥕 Comidas</button>
-    <button class="tab display tab-lugares" id="tab-lugares" role="tab" aria-selected="false">📍 Lugares</button>
-    <button class="tab display" id="tab-ajustes" role="tab" aria-selected="false">⚙️ Ajustes</button>
+  <div class="cabecera-fila">
+    <div class="cabecera-texto">
+      <h1 class="display">Primeros alimentos de Júlia 👶🏻</h1>
+      <p class="subtitulo">Su diario de descubrimientos, bocado a bocado</p>
+    </div>
+    <button class="btn-ajustes" id="btn-ajustes" aria-label="Ajustes">⚙️</button>
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="Diarios">
+    <button class="tab display" id="tab-comida" role="tab" aria-selected="true">🥣 Comidas</button>
+    <button class="tab display tab-lugares" id="tab-lugar" role="tab" aria-selected="false">📍 Lugares</button>
   </nav>
+
+  <div class="vistas" role="tablist" aria-label="Forma de verlo">
+    <button class="vista-btn" id="ver-calendario" role="tab" aria-selected="false">🗓️ Calendario</button>
+    <button class="vista-btn" id="ver-diario" role="tab" aria-selected="true">📖 Diario</button>
+    <button class="vista-btn" id="ver-lista" role="tab" aria-selected="false">📋 Lista</button>
+  </div>
 </header>
 
 <div id="carga">
@@ -1069,10 +1292,7 @@
 </div>
 
 <main>
-  <section id="vista-diario"></section>
-  <section id="vista-alimentos" hidden></section>
-  <section id="vista-lugares" hidden></section>
-  <section id="vista-ajustes" hidden></section>
+  <section id="panel"></section>
 </main>
 
 <button class="fab" id="btn-nueva" aria-label="Apuntar una comida">＋</button>
@@ -1145,6 +1365,19 @@
     </div>
     <button class="btn-guardar display" id="encuadre-listo">Listo</button>
   </div>
+</div>
+
+<div class="hoja" id="hoja-ajustes" role="dialog" aria-label="Ajustes">
+  <div class="asa"></div>
+  <h2 class="display">⚙️ Ajustes</h2>
+  <div id="dentro-ajustes"></div>
+</div>
+
+<div class="hoja" id="hoja-dia" role="dialog" aria-label="Lo de ese día">
+  <div class="asa"></div>
+  <h2 class="display" id="hoja-dia-titulo">Día</h2>
+  <div id="dentro-dia"></div>
+  <button class="btn-guardar display" id="btn-apuntar-dia">＋ Apuntar en este día</button>
 </div>
 
 <div class="toast" id="toast" role="status"></div>
@@ -1374,20 +1607,143 @@
 
   /* ── Vista: Diario ──────────────────────── */
 
-  function pintarDiario() {
-    var cont = $('vista-diario');
-    /* El diario es solo de comidas; las salidas tienen el suyo en Lugares */
-    var comidas = entradas.filter(function (e) { return !esLugar(e); });
-    if (!comidas.length) {
-      cont.innerHTML = '<div class="vacio"><span class="icono">🥣</span>' +
-        'Todavía no hay nada apuntado.<br>Toca el botón <strong>＋</strong> para apuntar la primera comida de Júlia.</div>';
-      return;
+  /* Cada diario (comidas o lugares) se ve de tres formas */
+  function propiasDe(tipo) {
+    return entradas.filter(function (e) { return esLugar(e) === (tipo === 'lugar'); });
+  }
+
+  function htmlStats(tipo) {
+    var propias = propiasDe(tipo);
+    var cosas = {}, dias = {};
+    propias.forEach(function (e) {
+      dias[e.fecha] = true;
+      (e.alimentos || []).forEach(function (a) { cosas[normalizar(a.n)] = true; });
+    });
+    var esL = tipo === 'lugar';
+    return '<div class="stats">' +
+      '<div class="stat' + (esL ? ' coral' : '') + '"><div class="num display">' + Object.keys(cosas).length +
+        '</div><div class="desc">' + (esL ? 'sitios conocidos' : 'alimentos probados') + '</div></div>' +
+      '<div class="stat' + (esL ? ' coral' : '') + '"><div class="num display">' + Object.keys(dias).length +
+        '</div><div class="desc">' + (esL ? 'días de salida' : 'días de diario') + '</div></div>' +
+    '</div>';
+  }
+
+  function htmlTimeline(tipo) {
+    var propias = propiasDe(tipo);
+    var filtro = filtros[tipo];
+    var esL = tipo === 'lugar';
+
+    if (!propias.length) {
+      return esL
+        ? '<div class="vacio"><span class="icono">📍</span>Todavía no hay ninguna salida apuntada.<br>Toca el botón <strong>＋</strong> para apuntar el primer sitio que ha conocido Júlia.</div>'
+        : '<div class="vacio"><span class="icono">🥣</span>Todavía no hay nada apuntado.<br>Toca el botón <strong>＋</strong> para apuntar la primera comida de Júlia.</div>';
     }
 
-    var novedades = { comida: ultimaNovedad('comida') };
-    cont.innerHTML = ordenadas(comidas).map(function (e) {
-      return tarjetaEntrada(e, novedades);
-    }).join('');
+    var visibles = ordenadas(propias).filter(function (e) {
+      return !filtro || e.reaccion === filtro;
+    });
+
+    var novedades = {};
+    novedades[tipo] = ultimaNovedad(tipo);
+    var tarjetas = visibles.map(function (e) { return tarjetaEntrada(e, novedades); }).join('');
+
+    return '<div class="filtros">' + botonesFiltro(tipo, filtro) + '</div>' +
+      (tarjetas || '<div class="vacio"><span class="icono">🔍</span>Nada con esa carita todavía.<br>Prueba con otro filtro.</div>');
+  }
+
+  /* ── Vista: Calendario ──────────────────── */
+
+  var mesVisible = null;   /* {a: año, m: mes 0-11} */
+
+  var ORDEN_REACCION = { encanto: 4, bien: 3, regular: 2, mal: 1 };
+
+  function claveDia(a, m, d) {
+    return a + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+  }
+
+  function htmlCalendario(tipo) {
+    var propias = propiasDe(tipo);
+    var hoy = hoyISO();
+
+    if (!mesVisible) {
+      var base = new Date();
+      mesVisible = { a: base.getFullYear(), m: base.getMonth() };
+    }
+
+    /* Agrupamos por día lo que hay apuntado */
+    var porDia = {};
+    propias.forEach(function (e) {
+      if (!porDia[e.fecha]) porDia[e.fecha] = [];
+      porDia[e.fecha].push(e);
+    });
+
+    var primero = new Date(mesVisible.a, mesVisible.m, 1);
+    var diasMes = new Date(mesVisible.a, mesVisible.m + 1, 0).getDate();
+    /* En España la semana empieza en lunes */
+    var hueco = (primero.getDay() + 6) % 7;
+
+    var celdas = '';
+    for (var i = 0; i < hueco; i++) celdas += '<div class="dia-celda fuera"></div>';
+
+    for (var d = 1; d <= diasMes; d++) {
+      var iso = claveDia(mesVisible.a, mesVisible.m, d);
+      var delDia = porDia[iso] || [];
+      var esHoy = iso === hoy;
+      var esFuturo = iso > hoy;
+
+      if (!delDia.length) {
+        celdas += '<button class="dia-celda vacio' + (esHoy ? ' hoy' : '') + '" data-dia="' + iso + '">' +
+          '<span class="num-dia">' + d + '</span></button>';
+        continue;
+      }
+
+      /* La foto del día: la primera que encontremos */
+      var foto = null;
+      delDia.forEach(function (e) {
+        if (!foto && e.fotos && e.fotos.length) foto = normFoto(e.fotos[0]);
+      });
+
+      /* Los emojis de ese día, sin repetir */
+      var vistos = {};
+      var emojis = [];
+      delDia.forEach(function (e) {
+        (e.alimentos || []).forEach(function (a) {
+          if (!vistos[a.e]) { vistos[a.e] = true; emojis.push(a.e); }
+        });
+      });
+
+      /* Si ese día hubo varias caritas, mandamos la mejor */
+      var mejor = null;
+      delDia.forEach(function (e) {
+        if (e.reaccion && (!mejor || ORDEN_REACCION[e.reaccion] > ORDEN_REACCION[mejor])) mejor = e.reaccion;
+      });
+
+      celdas += '<button class="dia-celda' + (foto ? ' con-foto' : '') + (esHoy ? ' hoy' : '') +
+        (esFuturo ? ' futuro' : '') + '" data-dia="' + iso + '">' +
+        (foto ? '<img class="foto-dia" src="' + foto.src + '" alt="" style="' + estiloFoto(foto) + '" loading="lazy">' +
+          '<span class="velo"></span>' : '') +
+        '<span class="num-dia">' + d + '</span>' +
+        '<span class="emojis-dia">' + esc(emojis.slice(0, 2).join('')) + '</span>' +
+        (mejor ? '<span class="tira ' + mejor + '"></span>' : '') +
+      '</button>';
+    }
+
+    var nombreMes = primero.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+    nombreMes = nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
+
+    return '<div class="mes-fila">' +
+        '<button class="mes-btn" data-mes="-1" aria-label="Mes anterior">‹</button>' +
+        '<div class="mes-nombre display">' + nombreMes + '</div>' +
+        '<button class="mes-btn" data-mes="1" aria-label="Mes siguiente">›</button>' +
+      '</div>' +
+      '<div class="semana-cabecera"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>' +
+      '<div class="rejilla-mes">' + celdas + '</div>' +
+      '<div class="leyenda">' +
+        '<span><i class="tira encanto"></i>¡Le encantó!</span>' +
+        '<span><i class="tira bien"></i>Le gustó</span>' +
+        '<span><i class="tira regular"></i>Así así</span>' +
+        '<span><i class="tira mal"></i>No le gustó</span>' +
+      '</div>';
   }
 
   /* De más reciente a más antigua */
@@ -1448,11 +1804,12 @@
     }).join('');
   }
 
-  function pintarListaDe(tipo) {
-    var esL = tipo === 'lugar';
-    var cont = $(esL ? 'vista-lugares' : 'vista-alimentos');
-    var propias = entradas.filter(function (e) { return esLugar(e) === esL; });
+  /* ── Vista: Lista ───────────────────────── */
+
+  function htmlLista(tipo) {
+    var propias = propiasDe(tipo);
     var filtro = filtros[tipo];
+    var esL = tipo === 'lugar';
     var mapa = {};
 
     propias.forEach(function (e) {
@@ -1470,17 +1827,6 @@
     var lista = Object.keys(mapa).map(function (k) { return mapa[k]; })
       .sort(function (a, b) { return a.primera < b.primera ? -1 : a.primera > b.primera ? 1 : 0; });
 
-    var dias = {};
-    propias.forEach(function (e) { dias[e.fecha] = true; });
-
-    /* El contador de arriba cuenta siempre el total, aunque haya filtro puesto */
-    var sinFiltro = {};
-    propias.forEach(function (e) {
-      (e.alimentos || []).forEach(function (a) { sinFiltro[normalizar(a.n)] = true; });
-    });
-
-    var htmlFiltros = '<div class="filtros">' + botonesFiltro(tipo, filtro) + '</div>';
-
     var filas = lista.map(function (a, i) {
       return '<div class="alimento-fila">' +
         '<span class="alimento-num">' + (i + 1) + '</span>' +
@@ -1495,74 +1841,124 @@
       ? '<div class="vacio"><span class="icono">🔍</span>Nada con esa carita todavía.<br>Prueba con otro filtro.</div>'
       : (esL
         ? '<div class="vacio"><span class="icono">📍</span>Cuando apuntes una salida, aquí saldrá la lista de todos los sitios que Júlia ha conocido, en orden.</div>'
-        : '<div class="vacio"><span class="icono">🥕</span>Cuando apuntes comidas en el diario, aquí saldrá la lista de todo lo que Júlia ha probado, en orden.</div>');
+        : '<div class="vacio"><span class="icono">🥕</span>Cuando apuntes comidas, aquí saldrá la lista de todo lo que Júlia ha probado, en orden.</div>');
 
-    cont.innerHTML =
-      '<div class="stats">' +
-        '<div class="stat' + (esL ? ' coral' : '') + '"><div class="num display">' + Object.keys(sinFiltro).length +
-          '</div><div class="desc">' + (esL ? 'sitios conocidos' : 'alimentos probados') + '</div></div>' +
-        '<div class="stat' + (esL ? ' coral' : '') + '"><div class="num display">' + Object.keys(dias).length +
-          '</div><div class="desc">' + (esL ? 'días de salida' : 'días de diario') + '</div></div>' +
-      '</div>' +
-      htmlFiltros +
+    return '<div class="filtros">' + botonesFiltro(tipo, filtro) + '</div>' +
       (filas ? '<div class="lista-alimentos">' + filas + '</div>' : vacio);
   }
 
-  function pintarAlimentos() { pintarListaDe('comida'); }
+  /* ── Qué diario y cómo lo miro ──────────── */
 
-  /* ── Vista: Lugares (su propio diario) ──── */
+  var diarioActual = 'comida';
+  var vistaActual = 'diario';
 
-  function pintarLugares() {
-    var cont = $('vista-lugares');
-    var propias = entradas.filter(esLugar);
-    var filtro = filtros.lugar;
-
-    var sitios = {};
-    var dias = {};
-    propias.forEach(function (e) {
-      dias[e.fecha] = true;
-      (e.alimentos || []).forEach(function (a) { sitios[normalizar(a.n)] = true; });
-    });
-
-    var htmlFiltros = '<div class="filtros">' + botonesFiltro('lugar', filtro) + '</div>';
-
-    var visibles = ordenadas(propias).filter(function (e) {
-      return !filtro || e.reaccion === filtro;
-    });
-
-    var novedades = { lugar: ultimaNovedad('lugar') };
-    var tarjetas = visibles.map(function (e) { return tarjetaEntrada(e, novedades); }).join('');
-
-    var vacio = filtro
-      ? '<div class="vacio"><span class="icono">🔍</span>Ninguna salida con esa carita todavía.<br>Prueba con otro filtro.</div>'
-      : '<div class="vacio"><span class="icono">📍</span>Todavía no hay ninguna salida apuntada.<br>Toca el botón <strong>＋</strong> para apuntar el primer sitio que ha conocido Júlia.</div>';
-
-    cont.innerHTML =
-      '<div class="stats">' +
-        '<div class="stat coral"><div class="num display">' + Object.keys(sitios).length +
-          '</div><div class="desc">sitios conocidos</div></div>' +
-        '<div class="stat coral"><div class="num display">' + Object.keys(dias).length +
-          '</div><div class="desc">días de salida</div></div>' +
-      '</div>' +
-      (propias.length ? htmlFiltros : '') +
-      (tarjetas || vacio);
+  function pintarPanel() {
+    var cont = $('panel');
+    var dentro = vistaActual === 'calendario' ? htmlCalendario(diarioActual)
+      : vistaActual === 'lista' ? htmlLista(diarioActual)
+      : htmlTimeline(diarioActual);
+    cont.innerHTML = htmlStats(diarioActual) + dentro;
   }
 
-  document.addEventListener('click', function (ev) {
-    var b = ev.target.closest('[data-filtro]');
-    if (!b) return;
-    var tipo = b.dataset.tipo;
-    var valor = b.dataset.filtro || null;
-    filtros[tipo] = filtros[tipo] === valor ? null : valor;
-    if (tipo === 'lugar') pintarLugares();
-    else pintarListaDe(tipo);
+  function pintarTodo() {
+    pintarPanel();
+    pintarAjustes();
+    if ($('hoja-dia').classList.contains('abierta')) pintarDia(diaAbierto);
+  }
+
+  function cambiarDiario(tipo) {
+    diarioActual = tipo;
+    $('tab-comida').setAttribute('aria-selected', tipo === 'comida');
+    $('tab-lugar').setAttribute('aria-selected', tipo === 'lugar');
+    var fab = $('btn-nueva');
+    fab.classList.toggle('lugar', tipo === 'lugar');
+    fab.setAttribute('aria-label', tipo === 'lugar' ? 'Apuntar un lugar' : 'Apuntar una comida');
+    pintarPanel();
+  }
+
+  function cambiarVista(v) {
+    vistaActual = v;
+    ['calendario', 'diario', 'lista'].forEach(function (x) {
+      $('ver-' + x).setAttribute('aria-selected', v === x);
+    });
+    pintarPanel();
+  }
+
+  $('tab-comida').addEventListener('click', function () { cambiarDiario('comida'); });
+  $('tab-lugar').addEventListener('click', function () { cambiarDiario('lugar'); });
+  ['calendario', 'diario', 'lista'].forEach(function (v) {
+    $('ver-' + v).addEventListener('click', function () { cambiarVista(v); });
   });
 
-  /* ── Vista: Ajustes ─────────────────────── */
+  /* Filtros y flechas del calendario */
+  document.addEventListener('click', function (ev) {
+    var f = ev.target.closest('[data-filtro]');
+    if (f) {
+      var tipo = f.dataset.tipo;
+      var valor = f.dataset.filtro || null;
+      filtros[tipo] = filtros[tipo] === valor ? null : valor;
+      pintarPanel();
+      return;
+    }
+
+    var m = ev.target.closest('[data-mes]');
+    if (m) {
+      var paso = Number(m.dataset.mes);
+      var d = new Date(mesVisible.a, mesVisible.m + paso, 1);
+      mesVisible = { a: d.getFullYear(), m: d.getMonth() };
+      pintarPanel();
+      return;
+    }
+
+    var dia = ev.target.closest('[data-dia]');
+    if (dia) abrirDia(dia.dataset.dia);
+  });
+
+  /* ── Hoja de un día del calendario ──────── */
+
+  var diaAbierto = null;
+
+  function pintarDia(iso) {
+    var propias = propiasDe(diarioActual).filter(function (e) { return e.fecha === iso; });
+    var novedades = {};
+    novedades[diarioActual] = ultimaNovedad(diarioActual);
+    var futuro = iso > hoyISO();
+
+    $('hoja-dia-titulo').textContent = fechaBonita(iso);
+    $('dentro-dia').innerHTML = propias.length
+      ? ordenadas(propias).map(function (e) { return tarjetaEntrada(e, novedades); }).join('')
+      : '<div class="vacio"><span class="icono">' + (futuro ? '📝' : '🗓️') + '</span>' +
+        (futuro
+          ? 'Nada planeado para este día todavía.'
+          : 'Ese día no hay nada apuntado.') + '</div>';
+    $('btn-apuntar-dia').textContent = futuro ? '＋ Planear algo para este día' : '＋ Apuntar en este día';
+  }
+
+  function abrirDia(iso) {
+    diaAbierto = iso;
+    pintarDia(iso);
+    $('overlay').classList.add('abierta');
+    $('hoja-dia').classList.add('abierta');
+  }
+
+  function cerrarDia() {
+    $('hoja-dia').classList.remove('abierta');
+    $('overlay').classList.remove('abierta');
+    diaAbierto = null;
+  }
+
+  $('btn-apuntar-dia').addEventListener('click', function () {
+    var iso = diaAbierto;
+    cerrarDia();
+    abrirHoja(null, iso);
+  });
+
+  $('dentro-dia').addEventListener('click', manejarTarjetas);
+
+  /* ── Ajustes (ahora en su propia hoja) ──── */
 
   function pintarAjustes() {
-    var cont = $('vista-ajustes');
-    cont.innerHTML =
+    $('dentro-ajustes').innerHTML =
       htmlSync() +
       '<div class="backup">' +
         '<h2 class="display">💾 Copia de seguridad</h2>' +
@@ -1580,34 +1976,13 @@
     enlazarSync();
   }
 
-  function pintarTodo() {
-    pintarDiario();
-    pintarAlimentos();
-    pintarLugares();
+  $('btn-ajustes').addEventListener('click', function () {
+    /* Lo repintamos al abrir: así siempre sale al día aunque la app
+       acabe de arrancar y todavía no haya pintado nada */
     pintarAjustes();
-  }
-
-  /* ── Pestañas ───────────────────────────── */
-
-  var pestanaActual = 'diario';
-
-  function cambiarPestana(cual) {
-    pestanaActual = cual;
-    ['diario', 'alimentos', 'lugares', 'ajustes'].forEach(function (p) {
-      $('tab-' + p).setAttribute('aria-selected', cual === p);
-      $('vista-' + p).hidden = cual !== p;
-    });
-    /* En Lugares el botón ＋ apunta a añadir una salida */
-    var fab = $('btn-nueva');
-    fab.classList.toggle('lugar', cual === 'lugares');
-    fab.setAttribute('aria-label', cual === 'lugares' ? 'Apuntar un lugar' : 'Apuntar una comida');
-    fab.hidden = cual === 'ajustes';
-  }
-
-  ['diario', 'alimentos', 'lugares', 'ajustes'].forEach(function (p) {
-    $('tab-' + p).addEventListener('click', function () { cambiarPestana(p); });
+    $('overlay').classList.add('abierta');
+    $('hoja-ajustes').classList.add('abierta');
   });
-
 
   /* ── Formulario ─────────────────────────── */
 
@@ -1635,16 +2010,16 @@
     $('pista-fotos').hidden = !formFotos.length;
   }
 
-  function abrirHoja(entrada) {
+  function abrirHoja(entrada, fechaSugerida) {
     editandoId = entrada ? entrada.id : null;
     formAlimentos = entrada ? (entrada.alimentos || []).slice() : [];
     formReaccion = entrada ? entrada.reaccion : null;
     formFotos = entrada ? (entrada.fotos || []).slice() : [];
-    $('campo-fecha').value = entrada ? entrada.fecha : hoyISO();
+    $('campo-fecha').value = entrada ? entrada.fecha : (fechaSugerida || hoyISO());
     $('campo-nota').value = entrada ? (entrada.nota || '') : '';
     $('campo-alimento').value = '';
 
-    formTipo = entrada ? (entrada.tipo || 'comida') : (pestanaActual === 'lugares' ? 'lugar' : 'comida');
+    formTipo = entrada ? (entrada.tipo || 'comida') : diarioActual;
     var esL = formTipo === 'lugar';
     $('hoja-titulo').textContent = entrada
       ? (esL ? 'Editar salida' : 'Editar entrada')
@@ -1669,8 +2044,17 @@
     $('hoja').classList.remove('abierta');
   }
 
+  /* Tocar fuera cierra la hoja que esté abierta, sea cual sea */
+  function cerrarTodasLasHojas() {
+    $('overlay').classList.remove('abierta');
+    ['hoja', 'hoja-ajustes', 'hoja-dia'].forEach(function (h) {
+      $(h).classList.remove('abierta');
+    });
+    diaAbierto = null;
+  }
+
   $('btn-nueva').addEventListener('click', function () { abrirHoja(null); });
-  $('overlay').addEventListener('click', cerrarHoja);
+  $('overlay').addEventListener('click', cerrarTodasLasHojas);
 
   function anadirAlimento() {
     var campo = $('campo-alimento');
@@ -1974,7 +2358,7 @@
       btn.disabled = false;
       var eraEdicion = !!editandoId;
       cerrarHoja();
-      cambiarPestana(entrada.tipo === 'lugar' ? 'lugares' : 'diario');
+      cambiarDiario(entrada.tipo === 'lugar' ? 'lugar' : 'comida');
       pintarTodo();
       aviso(eraEdicion ? 'Entrada actualizada ✓' : 'Guardado en el diario ✓');
       sincronizar();
@@ -2031,8 +2415,7 @@
   }
 
   /* Las tarjetas salen en los dos diarios: el general y el de lugares */
-  $('vista-diario').addEventListener('click', manejarTarjetas);
-  $('vista-lugares').addEventListener('click', manejarTarjetas);
+  $('panel').addEventListener('click', manejarTarjetas);
 
   /* ── Visor de fotos ─────────────────────── */
 
@@ -2269,7 +2652,9 @@
       return !!$('carga') ||
         $('visor').classList.contains('abierto') ||
         $('encuadre').classList.contains('abierto') ||
-        $('hoja').classList.contains('abierta');
+        $('hoja').classList.contains('abierta') ||
+        $('hoja-ajustes').classList.contains('abierta') ||
+        $('hoja-dia').classList.contains('abierta');
     }
 
     function arriba() {
