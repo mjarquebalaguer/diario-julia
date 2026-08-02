@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F8FAF2">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Primeros alimentos de Júlia 👶🏻</title>
 
 <style>
@@ -2527,8 +2526,15 @@
 
       toca($('btn-guardar'));
       await hasta(function () { return $('vista-diario').querySelector('article'); });
+      await esperar(300);
+      var art = $('vista-diario').querySelector('article');
+      R.push('DIAG cajas=' + $('vista-diario').querySelectorAll('.foto-caja').length +
+        ' imgs=' + $('vista-diario').querySelectorAll('img').length +
+        ' divfotos=' + $('vista-diario').querySelectorAll('.fotos').length +
+        ' htmlfin=' + art.innerHTML.slice(-160).replace(/</g, '{'));
       ok('foto-en-caja', !!$('vista-diario').querySelector('.foto-caja img'));
-      ok('diario-guarda-zoom', $('vista-diario').querySelector('.foto-caja img').style.transform.indexOf('scale(') >= 0);
+      var im = $('vista-diario').querySelector('.foto-caja img');
+      ok('diario-guarda-zoom', im && im.style.transform.indexOf('scale(') >= 0);
 
       /* --- Visor tipo carrusel --- */
       toca($('vista-diario').querySelector('[data-ver]'));
