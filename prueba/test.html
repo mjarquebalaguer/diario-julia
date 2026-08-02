@@ -2604,9 +2604,13 @@
       /* Borrar desde lugares */
       toca($('tab-lugares'));
       await esperar(150);
+      /* Los dos toques seguidos: si esperamos, el tiempo virtual dispara
+         el temporizador de 3s que cancela la confirmacion */
       var borrar = vl.querySelector('[data-borrar]');
-      toca(borrar); await esperar(120); toca(borrar);
-      await esperar(500);
+      toca(borrar);
+      ok('pide-confirmacion', borrar.textContent.indexOf('Borrar') >= 0, borrar.textContent);
+      toca(borrar);
+      await esperar(600);
       ok('borrar-desde-lugares', vl.querySelectorAll('article.dia').length === 1,
         'n=' + vl.querySelectorAll('article.dia').length);
 
