@@ -2779,12 +2779,15 @@
 
       /* 9) Simulamos GitHub lento y comprobamos el ciclo completo del tirón */
       var fetchReal = window.fetch;
-      window.fetch = function (u) {
+      window.fetch = function (u, o) {
         if (String(u).indexOf('api.github.com') >= 0) {
+          var metodo = (o && o.method) || 'GET';
+          /* Imitamos lo que devuelve GitHub de verdad en cada caso */
+          var cuerpo = metodo === 'PUT'
+            ? JSON.stringify({ content: { sha: 'shafalsa123' } })
+            : JSON.stringify({ version: 1, entradas: {}, borradas: {} });
           return new Promise(function (res) {
-            setTimeout(function () {
-              res(new Response(JSON.stringify({ login: 'prueba', private: true }), { status: 200 }));
-            }, 1200);
+            setTimeout(function () { res(new Response(cuerpo, { status: 200 })); }, 1200);
           });
         }
         return fetchReal.apply(window, arguments);
