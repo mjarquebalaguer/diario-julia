@@ -971,6 +971,48 @@
     .girador { animation-duration: 2.6s; }
     #carga { transition: none; }
   }
+
+  /* Avisito de que está mirando si hay novedades en la nube */
+  .sync-chip {
+    position: fixed;
+    top: calc(10px + env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%) translateY(-160%);
+    background: var(--card);
+    color: var(--ink-soft);
+    box-shadow: var(--shadow);
+    border-radius: 999px;
+    padding: 7px 16px 7px 11px;
+    font-size: .8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 38;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform .3s ease-out, opacity .3s;
+  }
+
+  .sync-chip.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  .sync-punto {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-soft);
+    border-top-color: var(--accent);
+    animation: girar .9s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sync-punto { animation-duration: 2.6s; }
+    .sync-chip { transition: none; }
+  }
 </style>
 
 </head>
@@ -991,6 +1033,10 @@
     <div class="girador" role="status" aria-label="Cargando"></div>
     <p class="carga-texto" id="carga-texto">Abriendo el diario…</p>
   </div>
+</div>
+
+<div class="sync-chip" id="sync-chip" role="status">
+  <span class="sync-punto" aria-hidden="true"></span>Buscando novedades…
 </div>
 
 <main>
@@ -1301,14 +1347,16 @@
 
   function pintarDiario() {
     var cont = $('vista-diario');
-    if (!entradas.length) {
+    /* El diario es solo de comidas; las salidas tienen el suyo en Lugares */
+    var comidas = entradas.filter(function (e) { return !esLugar(e); });
+    if (!comidas.length) {
       cont.innerHTML = '<div class="vacio"><span class="icono">🥣</span>' +
         'Todavía no hay nada apuntado.<br>Toca el botón <strong>＋</strong> para apuntar la primera comida de Júlia.</div>';
       return;
     }
 
-    var novedades = { comida: ultimaNovedad('comida'), lugar: ultimaNovedad('lugar') };
-    cont.innerHTML = ordenadas(entradas).map(function (e) {
+    var novedades = { comida: ultimaNovedad('comida') };
+    cont.innerHTML = ordenadas(comidas).map(function (e) {
       return tarjetaEntrada(e, novedades);
     }).join('');
   }
@@ -2137,6 +2185,20 @@
   /* Por si algo va mal, el relojito nunca se queda dando vueltas para siempre */
   setTimeout(quitarCarga, 15000);
 
+  /* Avisito de «buscando novedades»: sale con un poco de retraso para no
+     dar un parpadeo cuando la nube contesta enseguida */
+  var chipTimer = null;
+  function indicadorSync(encendido) {
+    var el = $('sync-chip');
+    if (!el) return;
+    clearTimeout(chipTimer);
+    if (encendido) {
+      chipTimer = setTimeout(function () { el.classList.add('visible'); }, 400);
+    } else {
+      el.classList.remove('visible');
+    }
+  }
+
   /* ── Sincronización con GitHub ──────────── */
 
   var GH = 'https://api.github.com';
@@ -2245,6 +2307,7 @@
     if (!cfg() || EN_CLAUDE) return;
     if (sincronizando) { resincronizar = true; return; }
     sincronizando = true;
+    indicadorSync(true);
     estadoSync('⏳ Poniendo al día…');
 
     var indiceRemoto = { entradas: {}, borradas: {} };
@@ -2321,7 +2384,10 @@
       });
     }).then(function () {
       guardarTumbas(tumbasLoc);
-      if (huboCambiosLocales) pintarTodo();
+      if (huboCambiosLocales) {
+        pintarTodo();
+        aviso('Diario actualizado ✓');
+      }
       var hora = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
       estadoSync('✅ Todo al día en tu GitHub (' + hora + ')');
     }).catch(function (err) {
@@ -2331,6 +2397,7 @@
       else estadoSync('📴 Sin conexión — guardado en este dispositivo. Se pondrá al día solo.');
     }).then(function () {
       sincronizando = false;
+      indicadorSync(false);
       quitarCargaSuave();
       if (resincronizar) { resincronizar = false; sincronizar(); }
     });
