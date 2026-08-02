@@ -3257,6 +3257,30 @@
       await hasta(function () { return !$('carga'); }, 100);
       ok('relojito-al-final', !$('carga'));
 
+      /* Dejamos una foto puesta y la vista en el calendario, para la captura */
+      var lienzo = document.createElement('canvas');
+      lienzo.width = 500; lienzo.height = 500;
+      var g = lienzo.getContext('2d');
+      g.fillStyle = '#d98f4a'; g.fillRect(0, 0, 500, 500);
+      g.fillStyle = '#8a5a2b'; g.beginPath(); g.arc(250, 250, 150, 0, 7); g.fill();
+      var blob = await new Promise(function (r) { lienzo.toBlob(r, 'image/jpeg', 0.8); });
+
+      toca($('tab-comida'));
+      await esperar(150);
+      toca($('ver-diario'));
+      await esperar(200);
+      toca($('panel').querySelector('[data-editar]'));
+      await esperar(250);
+      var dt2 = new DataTransfer();
+      dt2.items.add(new File([blob], 'p.jpg', { type: 'image/jpeg' }));
+      $('input-fotos').files = dt2.files;
+      $('input-fotos').dispatchEvent(new Event('change', { bubbles: true }));
+      await hasta(function () { return $('miniaturas').children.length === 1; }, 100);
+      toca($('btn-guardar'));
+      await esperar(600);
+      toca($('ver-calendario'));
+      await esperar(400);
+
     } catch (e) {
       R.push('EXCEPCION ' + e.message + ' | ' + (e.stack || '').slice(0, 120));
     }
