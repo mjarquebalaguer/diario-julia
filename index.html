@@ -835,7 +835,8 @@
 
   .foto-caja.entera img { object-fit: contain; }
 
-  .fotos .foto-caja:only-child { grid-column: 1 / -1; aspect-ratio: 4 / 3; }
+  /* Siempre cuadrada, igual que el editor: así ves lo que ajustaste */
+  .fotos .foto-caja:only-child { grid-column: 1 / -1; }
 
   .encuadre-botones { display: flex; gap: 10px; }
 
@@ -1055,11 +1056,11 @@
     </div>
     <div class="zoom-fila" id="zoom-fila">
       <span aria-hidden="true">🔍</span>
-      <input type="range" id="encuadre-zoom" min="100" max="400" value="100" step="1" aria-label="Zoom de la foto">
+      <input type="range" id="encuadre-zoom" min="100" max="600" value="100" step="1" aria-label="Zoom de la foto">
     </div>
     <div class="encuadre-botones">
-      <button class="btn-secundario" id="encuadre-entera">🖼️ Ver foto entera</button>
-      <button class="btn-secundario" id="encuadre-centrar">🎯 Centrar</button>
+      <button class="btn-secundario" id="encuadre-entera">🖼️ Foto entera</button>
+      <button class="btn-secundario" id="encuadre-centrar">⬜ Llenar el cuadro</button>
     </div>
     <button class="btn-guardar display" id="encuadre-listo">Listo</button>
   </div>
@@ -1125,25 +1126,28 @@
     return tipo === 'lugar' ? '📍' : '🍽️';
   }
 
-  /* Las fotos antiguas se guardaron como texto y las de ayer con «pos»;
-     las nuevas llevan zoom (z) y desplazamiento (x, y) en fracciones del cuadro. */
+  /* Formatos que han existido: texto suelto, {src,pos}, {src,pos,z,x,y} (todos
+     partían de «llenar el cuadro») y el actual, ajuste:'libre', que parte de la
+     foto entera y deja alejarla y moverla a gusto. */
   function normFoto(f) {
-    if (typeof f === 'string') return { src: f, pos: '50% 50%', z: 1, x: 0, y: 0, entera: false };
+    if (typeof f === 'string') return { src: f, pos: '50% 50%', z: 1, x: 0, y: 0, entera: false, ajuste: '' };
     return {
       src: f.src,
       pos: f.pos || '50% 50%',
       z: f.z || 1,
       x: f.x || 0,
       y: f.y || 0,
-      entera: !!f.entera
+      entera: !!f.entera,
+      ajuste: f.ajuste || ''
     };
   }
 
   /* Un mismo estilo sirve para el diario, las miniaturas y el editor */
   function estiloFoto(foto) {
+    var mover = 'transform:scale(' + foto.z + ') translate(' + (foto.x * 100) + '%,' + (foto.y * 100) + '%)';
+    if (foto.ajuste === 'libre') return 'object-fit:contain;' + mover;
     if (foto.entera) return '';
-    return 'object-position:' + foto.pos + ';transform:scale(' + foto.z + ') translate(' +
-      (foto.x * 100) + '%,' + (foto.y * 100) + '%)';
+    return 'object-position:' + foto.pos + ';' + mover;
   }
 
   function esLugar(e) { return e.tipo === 'lugar'; }
@@ -1633,55 +1637,67 @@
   var encuadreEntera = false;
   var encNat = { w: 1, h: 1 };
 
-  /* No dejamos que la foto se despegue de los bordes del cuadro */
-  function limitarEncuadre() {
+  /* Con zoom 1 se ve la foto entera. La única regla: la foto no puede salirse
+     del cuadro, ni dejando un hueco por dentro ni escapándose por fuera. */
+  function medidasEncuadre() {
     var caja = $('encuadre-marco').getBoundingClientRect();
-    if (!caja.width) return;
-    var escala = Math.max(caja.width / encNat.w, caja.height / encNat.h);
-    var anchoCubre = encNat.w * escala;
-    var altoCubre = encNat.h * escala;
-    var topeX = Math.max(0, (anchoCubre * encZ - caja.width) / (2 * caja.width * encZ));
-    var topeY = Math.max(0, (altoCubre * encZ - caja.height) / (2 * caja.height * encZ));
+    var escala = Math.min(caja.width / encNat.w, caja.height / encNat.h);
+    return {
+      caja: caja,
+      ancho: encNat.w * escala,
+      alto: encNat.h * escala
+    };
+  }
+
+  function limitarEncuadre() {
+    var m = medidasEncuadre();
+    if (!m.caja.width) return;
+    var topeX = Math.abs(m.ancho * encZ - m.caja.width) / (2 * m.caja.width * encZ);
+    var topeY = Math.abs(m.alto * encZ - m.caja.height) / (2 * m.caja.height * encZ);
     encX = Math.min(topeX, Math.max(-topeX, encX));
     encY = Math.min(topeY, Math.max(-topeY, encY));
   }
 
+  /* Cuánto zoom hace falta para que la foto llene el cuadro del todo */
+  function zoomQueLlena() {
+    var m = medidasEncuadre();
+    if (!m.ancho || !m.alto) return 1;
+    return Math.max(m.caja.width / m.ancho, m.caja.height / m.alto);
+  }
+
   function aplicarEncuadre() {
-    var marco = $('encuadre-marco');
     var img = $('encuadre-img');
-    marco.classList.toggle('entera', encuadreEntera);
-    if (!encuadreEntera) {
-      limitarEncuadre();
-      img.style.transform = 'scale(' + encZ + ') translate(' + (encX * 100) + '%,' + (encY * 100) + '%)';
-    }
+    limitarEncuadre();
+    img.style.transform = 'scale(' + encZ + ') translate(' + (encX * 100) + '%,' + (encY * 100) + '%)';
     $('encuadre-zoom').value = Math.round(encZ * 100);
-    $('zoom-fila').hidden = encuadreEntera;
-    $('encuadre-entera').textContent = encuadreEntera ? '✂️ Recortar cuadrada' : '🖼️ Ver foto entera';
-    $('encuadre-pista').textContent = encuadreEntera
-      ? 'Se verá la foto completa, sin recortar.'
-      : 'Arrastra la foto con el dedo y usa el zoom para ajustarla.';
+    $('encuadre-pista').textContent = 'Arrástrala con el dedo y usa el zoom o dos dedos para ajustarla.';
   }
 
   function abrirEncuadre(i) {
     var foto = normFoto(formFotos[i]);
     encuadreIdx = i;
-    encuadreEntera = foto.entera;
-    encZ = foto.z;
-    encX = foto.x;
-    encY = foto.y;
+    encuadreEntera = false;
     var img = $('encuadre-img');
+    img.style.objectFit = 'contain';
+    img.style.objectPosition = '50% 50%';
     img.style.transform = '';
-    img.onload = function () {
+
+    function preparar() {
       encNat = { w: img.naturalWidth || 1, h: img.naturalHeight || 1 };
+      if (foto.ajuste === 'libre') {
+        encZ = foto.z; encX = foto.x; encY = foto.y;
+      } else {
+        /* Fotos de antes: arrancan como se veían, llenando el cuadro */
+        encZ = foto.entera ? 1 : zoomQueLlena();
+        encX = 0; encY = 0;
+      }
       aplicarEncuadre();
-    };
-    img.src = foto.src;
-    img.style.objectPosition = foto.pos;
-    if (img.complete && img.naturalWidth) {
-      encNat = { w: img.naturalWidth, h: img.naturalHeight };
     }
-    aplicarEncuadre();
+
+    img.onload = preparar;
+    img.src = foto.src;
     $('encuadre').classList.add('abierto');
+    if (img.complete && img.naturalWidth) preparar();
   }
 
   function cerrarEncuadre() {
@@ -1695,11 +1711,10 @@
     var foto = normFoto(formFotos[encuadreIdx]);
     formFotos[encuadreIdx] = {
       src: foto.src,
-      pos: foto.pos,
+      ajuste: 'libre',
       z: Math.round(encZ * 1000) / 1000,
       x: Math.round(encX * 10000) / 10000,
-      y: Math.round(encY * 10000) / 10000,
-      entera: encuadreEntera
+      y: Math.round(encY * 10000) / 10000
     };
     pintarMiniaturas();
   }
@@ -1721,7 +1736,6 @@
     }
 
     function empezar(ev) {
-      if (encuadreEntera) return;
       if (ev.touches && ev.touches.length === 2) {
         pellizco = { dist: separacion(ev), z0: encZ };
         arrastrando = false;
@@ -1733,13 +1747,11 @@
     }
 
     function mover(ev) {
-      if (encuadreEntera) return;
-
       if (pellizco && ev.touches && ev.touches.length === 2) {
         ev.preventDefault();
         var d = separacion(ev);
         if (pellizco.dist > 0) {
-          encZ = Math.min(4, Math.max(1, pellizco.z0 * (d / pellizco.dist)));
+          encZ = Math.min(6, Math.max(1, pellizco.z0 * (d / pellizco.dist)));
           aplicarEncuadre();
         }
         return;
@@ -1778,13 +1790,12 @@
   });
 
   $('encuadre-entera').addEventListener('click', function () {
-    encuadreEntera = !encuadreEntera;
+    encZ = 1; encX = 0; encY = 0;
     aplicarEncuadre();
   });
 
   $('encuadre-centrar').addEventListener('click', function () {
-    encZ = 1; encX = 0; encY = 0;
-    encuadreEntera = false;
+    encZ = zoomQueLlena(); encX = 0; encY = 0;
     aplicarEncuadre();
   });
 
