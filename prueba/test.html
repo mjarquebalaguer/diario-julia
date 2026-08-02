@@ -2252,6 +2252,9 @@
   }
 
   window.addEventListener('error', function (e) { R.push('ERRORJS ' + e.message); });
+  window.addEventListener('unhandledrejection', function (e) {
+    R.push('PROMESA ' + (e.reason && (e.reason.message || e.reason)));
+  });
 
   (async function () {
     try {
@@ -2361,6 +2364,10 @@
       ok('ajustes-tiene-github', $('vista-ajustes').textContent.indexOf('GitHub') >= 0);
       ok('fab-oculto-en-ajustes', $('btn-nueva').hidden);
       ok('alimentos-sin-github', $('vista-alimentos').textContent.indexOf('GitHub') < 0);
+
+      /* El relojito, comprobado al final: para entonces ya ha dado tiempo de sobra */
+      await hasta(function () { return !$('carga'); });
+      ok('relojito-al-final', !$('carga'));
 
     } catch (e) {
       R.push('EXCEPCION ' + e.message);
