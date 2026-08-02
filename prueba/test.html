@@ -2706,7 +2706,10 @@
 
   (async function () {
     try {
-      await hasta(function () { return !$('carga'); });
+      /* Esperamos de sobra: el relojito bloquea el gesto a proposito, y con
+         tiempo virtual la base de datos tarda mas de lo que marca el reloj */
+      await hasta(function () { return !$('carga'); }, 300);
+      ok('relojito-fuera-antes-de-empezar', !$('carga'), 'sigue puesto');
       await esperar(400);
 
       var cuerpo = document.body;
