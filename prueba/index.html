@@ -179,18 +179,18 @@
 
   nav.tabs {
     display: flex;
-    gap: 8px;
+    gap: 5px;
     margin: 18px 0 4px;
   }
 
   .tab {
     flex: 1;
-    padding: 10px 6px;
+    padding: 10px 4px;
     border-radius: 999px;
     background: var(--card);
     color: var(--ink-soft);
     font-weight: 700;
-    font-size: .87rem;
+    font-size: .78rem;
     text-align: center;
     white-space: nowrap;
     box-shadow: var(--shadow);
@@ -200,6 +200,11 @@
   .tab[aria-selected="true"] {
     background: var(--accent);
     color: var(--on-accent);
+  }
+
+  .tab-lugares[aria-selected="true"] {
+    background: var(--coral);
+    color: var(--on-coral);
   }
 
   /* ── Contenido ────────────────────────────── */
@@ -466,6 +471,8 @@
 
   .fab:active { transform: scale(.92); }
 
+  .fab[hidden] { display: none; }
+
   /* ── Hoja del formulario ──────────────────── */
 
   .overlay {
@@ -674,6 +681,139 @@
     border-radius: 16px;
   }
 
+  .visor-flecha {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 46px;
+    height: 74px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .14);
+    color: white;
+    font-size: 2rem;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    z-index: 2;
+  }
+
+  .visor-flecha.izq { left: 10px; }
+  .visor-flecha.der { right: 10px; }
+  .visor-flecha[hidden] { display: none; }
+
+  .visor-contador {
+    position: absolute;
+    bottom: calc(22px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, .9);
+    background: rgba(0, 0, 0, .4);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-weight: 700;
+    font-size: .85rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .visor-contador:empty { display: none; }
+
+  /* ── Ajustar el encuadre de una foto ──────── */
+
+  .encuadre {
+    position: fixed;
+    inset: 0;
+    z-index: 65;
+    background: rgba(20, 26, 18, .82);
+    display: none;
+    place-items: center;
+    padding: 18px;
+  }
+
+  .encuadre.abierto { display: grid; }
+
+  .encuadre-caja {
+    background: var(--bg);
+    border-radius: 24px;
+    padding: 20px;
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .encuadre-caja h3 { margin: 0; font-size: 1.15rem; }
+
+  .encuadre-pista { margin: 0; font-size: .86rem; color: var(--ink-soft); }
+
+  .encuadre-marco {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--regular-soft);
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .encuadre-marco img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .encuadre-marco.entera img { object-fit: contain; }
+
+  .encuadre-botones { display: flex; gap: 10px; }
+
+  .pista-fotos {
+    margin: 10px 2px 0;
+    font-size: .82rem;
+    color: var(--ink-soft);
+  }
+
+  /* ── Filtros por reacción ─────────────────── */
+
+  .filtros {
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 14px;
+    scrollbar-width: none;
+  }
+
+  .filtros::-webkit-scrollbar { display: none; }
+
+  .filtro {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--card);
+    color: var(--ink-soft);
+    font-weight: 700;
+    font-size: .85rem;
+    box-shadow: var(--shadow);
+    white-space: nowrap;
+  }
+
+  .filtro[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+  .filtro.f-encanto[aria-pressed="true"] { background: var(--crema); color: var(--crema-ink); }
+  .filtro.f-bien[aria-pressed="true"]    { background: var(--salvia); color: var(--salvia-ink); }
+  .filtro.f-regular[aria-pressed="true"] { background: var(--regular-soft); color: var(--ink); }
+  .filtro.f-mal[aria-pressed="true"]     { background: var(--danger-soft); color: var(--danger); }
+
+  /* ── Lugares ──────────────────────────────── */
+
+  .chip.lugar { background: var(--coral); color: var(--on-coral); }
+
+  .stat.coral .num { color: var(--coral); }
+
+  .fab.lugar { background: var(--coral); color: var(--on-coral); }
+
   .visor .cerrar {
     position: absolute;
     top: calc(14px + env(safe-area-inset-top));
@@ -763,7 +903,8 @@
   <p class="subtitulo">Su diario de descubrimientos, bocado a bocado</p>
   <nav class="tabs" role="tablist">
     <button class="tab display" id="tab-diario" role="tab" aria-selected="true">📖 Diario</button>
-    <button class="tab display" id="tab-alimentos" role="tab" aria-selected="false">🥕 Alimentos</button>
+    <button class="tab display" id="tab-alimentos" role="tab" aria-selected="false">🥕 Comidas</button>
+    <button class="tab display tab-lugares" id="tab-lugares" role="tab" aria-selected="false">📍 Lugares</button>
     <button class="tab display" id="tab-ajustes" role="tab" aria-selected="false">⚙️ Ajustes</button>
   </nav>
 </header>
@@ -778,6 +919,7 @@
 <main>
   <section id="vista-diario"></section>
   <section id="vista-alimentos" hidden></section>
+  <section id="vista-lugares" hidden></section>
   <section id="vista-ajustes" hidden></section>
 </main>
 
@@ -795,7 +937,7 @@
   </div>
 
   <div class="campo">
-    <label for="campo-alimento">Alimentos</label>
+    <label for="campo-alimento" id="etiqueta-cosas">Alimentos</label>
     <div class="fila-anadir">
       <input type="text" id="campo-alimento" placeholder="Escribe uno, ej. plátano" autocomplete="off" enterkeyhint="done">
       <button class="btn-anadir" id="btn-anadir-alimento">Añadir</button>
@@ -818,14 +960,33 @@
     <button class="btn-fotos" id="btn-fotos">📷 Añadir fotos del momento</button>
     <input type="file" id="input-fotos" accept="image/*" multiple hidden>
     <div class="miniaturas" id="miniaturas"></div>
+    <p class="pista-fotos" id="pista-fotos" hidden>Toca una foto para elegir qué parte se ve.</p>
   </div>
 
   <button class="btn-guardar display" id="btn-guardar">Guardar en el diario 🥣</button>
 </div>
 
 <div class="visor" id="visor">
-  <button class="cerrar" aria-label="Cerrar">✕</button>
+  <button class="cerrar" id="visor-cerrar" aria-label="Cerrar">✕</button>
+  <button class="visor-flecha izq" id="visor-antes" aria-label="Foto anterior">‹</button>
   <img id="visor-img" alt="Foto del diario">
+  <button class="visor-flecha der" id="visor-despues" aria-label="Foto siguiente">›</button>
+  <div class="visor-contador" id="visor-contador"></div>
+</div>
+
+<div class="encuadre" id="encuadre" role="dialog" aria-label="Ajustar el encuadre de la foto">
+  <div class="encuadre-caja">
+    <h3 class="display">Ajustar la foto</h3>
+    <p class="encuadre-pista" id="encuadre-pista">Arrastra la foto para elegir qué parte se ve.</p>
+    <div class="encuadre-marco" id="encuadre-marco">
+      <img id="encuadre-img" alt="Foto que estás ajustando">
+    </div>
+    <div class="encuadre-botones">
+      <button class="btn-secundario" id="encuadre-entera">🖼️ Ver foto entera</button>
+      <button class="btn-secundario" id="encuadre-centrar">🎯 Centrar</button>
+    </div>
+    <button class="btn-guardar display" id="encuadre-listo">Listo</button>
+  </div>
 </div>
 
 <div class="toast" id="toast" role="status"></div>
@@ -856,19 +1017,45 @@
     almendra: '🥜', cacahuete: '🥜', nuez: '🥜', crema: '🥣', pure: '🥣'
   };
 
+  var EMOJIS_LUGAR = {
+    parque: '🌳', jardin: '🌳', bosque: '🌲', montana: '⛰️', sierra: '⛰️',
+    playa: '🏖️', mar: '🌊', piscina: '🏊', rio: '🏞️', lago: '🏞️',
+    museo: '🏛️', biblioteca: '📚', cine: '🎬', teatro: '🎭', zoo: '🦁',
+    acuario: '🐠', granja: '🚜', feria: '🎡', atracciones: '🎡',
+    restaurante: '🍽️', bar: '☕', cafeteria: '☕', mercado: '🧺',
+    supermercado: '🛒', tienda: '🛍️', casa: '🏠', abuelos: '👵',
+    abuela: '👵', abuelo: '👴', tios: '👨‍👩‍👧', primos: '👨‍👩‍👧',
+    pueblo: '🏘️', ciudad: '🏙️', hotel: '🏨', camping: '⛺',
+    barco: '⛵', tren: '🚂', avion: '✈️', coche: '🚗', autobus: '🚌',
+    medico: '🩺', pediatra: '🩺', hospital: '🏥', escuela: '🏫',
+    guarderia: '🧸', iglesia: '⛪', castillo: '🏰', puente: '🌉',
+    faro: '🗼', mirador: '🔭', columpio: '🛝', parquebolas: '🛝',
+    nieve: '❄️', campo: '🌾', huerto: '🌱', fuente: '⛲', plaza: '⛲',
+    calle: '🚶', paseo: '🚶', excursion: '🥾', piscinabolas: '🛝'
+  };
+
   function normalizar(texto) {
     return texto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
   }
 
-  function emojiPara(nombre) {
+  function emojiPara(nombre, tipo) {
+    var mapa = tipo === 'lugar' ? EMOJIS_LUGAR : EMOJIS;
     var n = normalizar(nombre);
-    if (EMOJIS[n]) return EMOJIS[n];
-    var claves = Object.keys(EMOJIS);
+    if (mapa[n]) return mapa[n];
+    var claves = Object.keys(mapa);
     for (var i = 0; i < claves.length; i++) {
-      if (n.indexOf(claves[i]) !== -1) return EMOJIS[claves[i]];
+      if (n.indexOf(claves[i]) !== -1) return mapa[claves[i]];
     }
-    return '🍽️';
+    return tipo === 'lugar' ? '📍' : '🍽️';
   }
+
+  /* Las fotos antiguas se guardaron como texto; las nuevas llevan encuadre */
+  function normFoto(f) {
+    if (typeof f === 'string') return { src: f, pos: '50% 50%', entera: false };
+    return { src: f.src, pos: f.pos || '50% 50%', entera: !!f.entera };
+  }
+
+  function esLugar(e) { return e.tipo === 'lugar'; }
 
   var REACCIONES = [
     { id: 'encanto', cara: '😍', texto: '¡Le encantó!' },
@@ -936,6 +1123,7 @@
   var formAlimentos = [];
   var formReaccion = null;
   var formFotos = [];
+  var formTipo = 'comida';
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -974,18 +1162,38 @@
 
   /* ── Primeras veces (para la etiqueta "¡nuevo!") ── */
 
-  function mapaPrimerasVeces() {
+  function mapaPrimerasVeces(tipo) {
     var primera = {};
-    entradas.forEach(function (e) {
+    entradas.filter(function (e) { return esLugar(e) === (tipo === 'lugar'); }).forEach(function (e) {
       (e.alimentos || []).forEach(function (a) {
         var clave = normalizar(a.n);
         if (!primera[clave] || e.fecha < primera[clave].fecha ||
             (e.fecha === primera[clave].fecha && e.creado < primera[clave].creado)) {
-          primera[clave] = { fecha: e.fecha, creado: e.creado, id: e.id };
+          primera[clave] = { fecha: e.fecha, creado: e.creado, id: e.id, nombre: a.n };
         }
       });
     });
     return primera;
+  }
+
+  /* La etiqueta «¡nuevo!» marca solo el descubrimiento más reciente:
+     al probar algo nuevo, se le quita al anterior. */
+  function ultimaNovedad(tipo) {
+    var primera = mapaPrimerasVeces(tipo);
+    var mejor = null;
+    Object.keys(primera).forEach(function (clave) {
+      var p = primera[clave];
+      if (!mejor || p.fecha > mejor.fecha || (p.fecha === mejor.fecha && p.creado > mejor.creado)) {
+        mejor = p;
+      }
+    });
+    if (!mejor) return {};
+    /* Si ese día estrenó varias cosas a la vez, se marcan todas */
+    var marcadas = {};
+    Object.keys(primera).forEach(function (clave) {
+      if (primera[clave].id === mejor.id) marcadas[clave] = true;
+    });
+    return { id: mejor.id, claves: marcadas };
   }
 
   /* ── Vista: Diario ──────────────────────── */
@@ -998,7 +1206,8 @@
       return;
     }
 
-    var primeras = mapaPrimerasVeces();
+    var novedadComida = ultimaNovedad('comida');
+    var novedadLugar = ultimaNovedad('lugar');
     var lista = entradas.slice().sort(function (a, b) {
       if (a.fecha !== b.fecha) return a.fecha < b.fecha ? 1 : -1;
       return b.creado - a.creado;
@@ -1006,15 +1215,23 @@
 
     var hoy = hoyISO();
     var html = lista.map(function (e) {
+      var lugar = esLugar(e);
+      var novedad = lugar ? novedadLugar : novedadComida;
+
       var chips = (e.alimentos || []).map(function (a) {
         var clave = normalizar(a.n);
-        var esNueva = primeras[clave] && primeras[clave].id === e.id;
-        return '<span class="chip' + (esNueva ? ' nuevo' : '') + '">' +
+        var esNueva = novedad.id === e.id && novedad.claves && novedad.claves[clave];
+        return '<span class="chip' + (lugar ? ' lugar' : '') + (esNueva ? ' nuevo' : '') + '">' +
           '<span>' + esc(a.e) + '</span>' + esc(a.n) + '</span>';
       }).join('');
 
       var fotos = (e.fotos || []).map(function (f, i) {
-        return '<img src="' + f + '" alt="Foto de la comida" data-ver="' + e.id + ':' + i + '" loading="lazy">';
+        var foto = normFoto(f);
+        var estilo = foto.entera
+          ? 'object-fit:contain;background:var(--regular-soft)'
+          : 'object-position:' + foto.pos;
+        return '<img src="' + foto.src + '" alt="Foto de ' + (lugar ? 'la salida' : 'la comida') +
+          '" style="' + estilo + '" data-ver="' + e.id + ':' + i + '" loading="lazy">';
       }).join('');
 
       return '<article class="dia">' +
@@ -1038,11 +1255,18 @@
 
   /* ── Vista: Alimentos ───────────────────── */
 
-  function pintarAlimentos() {
-    var cont = $('vista-alimentos');
+  /* Filtro activo de cada pestaña: null = todo */
+  var filtros = { comida: null, lugar: null };
+
+  function pintarListaDe(tipo) {
+    var esL = tipo === 'lugar';
+    var cont = $(esL ? 'vista-lugares' : 'vista-alimentos');
+    var propias = entradas.filter(function (e) { return esLugar(e) === esL; });
+    var filtro = filtros[tipo];
     var mapa = {};
 
-    entradas.forEach(function (e) {
+    propias.forEach(function (e) {
+      if (filtro && e.reaccion !== filtro) return;
       (e.alimentos || []).forEach(function (a) {
         var clave = normalizar(a.n);
         if (!mapa[clave]) {
@@ -1057,7 +1281,23 @@
       .sort(function (a, b) { return a.primera < b.primera ? -1 : a.primera > b.primera ? 1 : 0; });
 
     var dias = {};
-    entradas.forEach(function (e) { dias[e.fecha] = true; });
+    propias.forEach(function (e) { dias[e.fecha] = true; });
+
+    /* El contador de arriba cuenta siempre el total, aunque haya filtro puesto */
+    var sinFiltro = {};
+    propias.forEach(function (e) {
+      (e.alimentos || []).forEach(function (a) { sinFiltro[normalizar(a.n)] = true; });
+    });
+
+    var botones = [{ id: null, cara: '✨', texto: 'Todo' }].concat(REACCIONES.map(function (r) {
+      return { id: r.id, cara: r.cara, texto: r.texto };
+    }));
+
+    var htmlFiltros = '<div class="filtros">' + botones.map(function (b) {
+      return '<button class="filtro' + (b.id ? ' f-' + b.id : '') + '" data-filtro="' + (b.id || '') +
+        '" data-tipo="' + tipo + '" aria-pressed="' + (filtro === b.id) + '">' +
+        b.cara + ' ' + b.texto + '</button>';
+    }).join('') + '</div>';
 
     var filas = lista.map(function (a, i) {
       return '<div class="alimento-fila">' +
@@ -1069,15 +1309,34 @@
       '</div>';
     }).join('');
 
+    var vacio = filtro
+      ? '<div class="vacio"><span class="icono">🔍</span>Nada con esa carita todavía.<br>Prueba con otro filtro.</div>'
+      : (esL
+        ? '<div class="vacio"><span class="icono">📍</span>Cuando apuntes una salida, aquí saldrá la lista de todos los sitios que Júlia ha conocido, en orden.</div>'
+        : '<div class="vacio"><span class="icono">🥕</span>Cuando apuntes comidas en el diario, aquí saldrá la lista de todo lo que Júlia ha probado, en orden.</div>');
+
     cont.innerHTML =
       '<div class="stats">' +
-        '<div class="stat"><div class="num display">' + lista.length + '</div><div class="desc">alimentos probados</div></div>' +
-        '<div class="stat"><div class="num display">' + Object.keys(dias).length + '</div><div class="desc">días de diario</div></div>' +
+        '<div class="stat' + (esL ? ' coral' : '') + '"><div class="num display">' + Object.keys(sinFiltro).length +
+          '</div><div class="desc">' + (esL ? 'sitios conocidos' : 'alimentos probados') + '</div></div>' +
+        '<div class="stat' + (esL ? ' coral' : '') + '"><div class="num display">' + Object.keys(dias).length +
+          '</div><div class="desc">' + (esL ? 'días de salida' : 'días de diario') + '</div></div>' +
       '</div>' +
-      (filas
-        ? '<div class="lista-alimentos">' + filas + '</div>'
-        : '<div class="vacio"><span class="icono">🥕</span>Cuando apuntes comidas en el diario, aquí saldrá la lista de todo lo que Júlia ha probado, en orden.</div>');
+      htmlFiltros +
+      (filas ? '<div class="lista-alimentos">' + filas + '</div>' : vacio);
   }
+
+  function pintarAlimentos() { pintarListaDe('comida'); }
+  function pintarLugares() { pintarListaDe('lugar'); }
+
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-filtro]');
+    if (!b) return;
+    var tipo = b.dataset.tipo;
+    var valor = b.dataset.filtro || null;
+    filtros[tipo] = filtros[tipo] === valor ? null : valor;
+    pintarListaDe(tipo);
+  });
 
   /* ── Vista: Ajustes ─────────────────────── */
 
@@ -1104,23 +1363,30 @@
   function pintarTodo() {
     pintarDiario();
     pintarAlimentos();
+    pintarLugares();
     pintarAjustes();
   }
 
   /* ── Pestañas ───────────────────────────── */
 
+  var pestanaActual = 'diario';
+
   function cambiarPestana(cual) {
-    $('tab-diario').setAttribute('aria-selected', cual === 'diario');
-    $('tab-alimentos').setAttribute('aria-selected', cual === 'alimentos');
-    $('tab-ajustes').setAttribute('aria-selected', cual === 'ajustes');
-    $('vista-diario').hidden = cual !== 'diario';
-    $('vista-alimentos').hidden = cual !== 'alimentos';
-    $('vista-ajustes').hidden = cual !== 'ajustes';
+    pestanaActual = cual;
+    ['diario', 'alimentos', 'lugares', 'ajustes'].forEach(function (p) {
+      $('tab-' + p).setAttribute('aria-selected', cual === p);
+      $('vista-' + p).hidden = cual !== p;
+    });
+    /* En Lugares el botón ＋ apunta a añadir una salida */
+    var fab = $('btn-nueva');
+    fab.classList.toggle('lugar', cual === 'lugares');
+    fab.setAttribute('aria-label', cual === 'lugares' ? 'Apuntar un lugar' : 'Apuntar una comida');
+    fab.hidden = cual === 'ajustes';
   }
 
-  $('tab-diario').addEventListener('click', function () { cambiarPestana('diario'); });
-  $('tab-alimentos').addEventListener('click', function () { cambiarPestana('alimentos'); });
-  $('tab-ajustes').addEventListener('click', function () { cambiarPestana('ajustes'); });
+  ['diario', 'alimentos', 'lugares', 'ajustes'].forEach(function (p) {
+    $('tab-' + p).addEventListener('click', function () { cambiarPestana(p); });
+  });
 
 
   /* ── Formulario ─────────────────────────── */
@@ -1141,9 +1407,15 @@
 
   function pintarMiniaturas() {
     $('miniaturas').innerHTML = formFotos.map(function (f, i) {
-      return '<div class="miniatura"><img src="' + f + '" alt="Foto elegida">' +
+      var foto = normFoto(f);
+      var estilo = foto.entera
+        ? 'object-fit:contain;background:var(--regular-soft)'
+        : 'object-position:' + foto.pos;
+      return '<div class="miniatura">' +
+        '<img src="' + foto.src + '" alt="Foto elegida" style="' + estilo + '" data-encuadrar="' + i + '">' +
         '<button data-quitar-foto="' + i + '" aria-label="Quitar foto">✕</button></div>';
     }).join('');
+    $('pista-fotos').hidden = !formFotos.length;
   }
 
   function abrirHoja(entrada) {
@@ -1154,7 +1426,20 @@
     $('campo-fecha').value = entrada ? entrada.fecha : hoyISO();
     $('campo-nota').value = entrada ? (entrada.nota || '') : '';
     $('campo-alimento').value = '';
-    $('hoja-titulo').textContent = entrada ? 'Editar entrada' : 'Apuntar una comida';
+
+    formTipo = entrada ? (entrada.tipo || 'comida') : (pestanaActual === 'lugares' ? 'lugar' : 'comida');
+    var esL = formTipo === 'lugar';
+    $('hoja-titulo').textContent = entrada
+      ? (esL ? 'Editar salida' : 'Editar entrada')
+      : (esL ? 'Apuntar un lugar' : 'Apuntar una comida');
+    $('etiqueta-cosas').textContent = esL ? 'Lugares' : 'Alimentos';
+    $('campo-alimento').placeholder = esL ? 'Escribe uno, ej. parque' : 'Escribe uno, ej. plátano';
+    $('campo-nota').placeholder = esL
+      ? 'Ej. Se pasó la tarde en los columpios'
+      : 'Ej. Le encantó, ¡se lo comió todo con las manos!';
+    $('hoja').setAttribute('aria-label', esL ? 'Apuntar un lugar' : 'Apuntar una comida');
+    $('btn-guardar').textContent = esL ? 'Guardar en el diario 📍' : 'Guardar en el diario 🥣';
+
     pintarReacciones();
     pintarChipsForm();
     pintarMiniaturas();
@@ -1175,7 +1460,7 @@
     var nombre = campo.value.trim();
     if (!nombre) return;
     nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1);
-    formAlimentos.push({ n: nombre, e: emojiPara(nombre) });
+    formAlimentos.push({ n: nombre, e: emojiPara(nombre, formTipo) });
     campo.value = '';
     campo.focus();
     pintarChipsForm();
@@ -1234,7 +1519,9 @@
       return comprimirFoto(a).catch(function () { return null; });
     });
     Promise.all(promesas).then(function (resultados) {
-      var buenas = resultados.filter(Boolean);
+      var buenas = resultados.filter(Boolean).map(function (src) {
+        return { src: src, pos: '50% 50%', entera: false };
+      });
       formFotos = formFotos.concat(buenas);
       if (buenas.length < archivos.length) aviso('Alguna foto no se pudo añadir');
       $('btn-fotos').textContent = '📷 Añadir fotos del momento';
@@ -1244,9 +1531,120 @@
 
   $('miniaturas').addEventListener('click', function (ev) {
     var btn = ev.target.closest('[data-quitar-foto]');
-    if (!btn) return;
-    formFotos.splice(Number(btn.dataset.quitarFoto), 1);
+    if (btn) {
+      formFotos.splice(Number(btn.dataset.quitarFoto), 1);
+      pintarMiniaturas();
+      return;
+    }
+    var img = ev.target.closest('[data-encuadrar]');
+    if (img) abrirEncuadre(Number(img.dataset.encuadrar));
+  });
+
+  /* ── Ajustar el encuadre de una foto ────── */
+
+  var encuadreIdx = -1;
+  var encuadrePos = { x: 50, y: 50 };
+  var encuadreEntera = false;
+
+  function aplicarEncuadre() {
+    var marco = $('encuadre-marco');
+    var img = $('encuadre-img');
+    marco.classList.toggle('entera', encuadreEntera);
+    img.style.objectPosition = encuadrePos.x + '% ' + encuadrePos.y + '%';
+    $('encuadre-entera').textContent = encuadreEntera ? '✂️ Recortar cuadrada' : '🖼️ Ver foto entera';
+    $('encuadre-pista').textContent = encuadreEntera
+      ? 'Se verá la foto completa, sin recortar.'
+      : 'Arrastra la foto para elegir qué parte se ve.';
+  }
+
+  function abrirEncuadre(i) {
+    var foto = normFoto(formFotos[i]);
+    encuadreIdx = i;
+    encuadreEntera = foto.entera;
+    var trozos = (foto.pos || '50% 50%').split(' ');
+    encuadrePos = { x: parseFloat(trozos[0]) || 50, y: parseFloat(trozos[1]) || 50 };
+    $('encuadre-img').src = foto.src;
+    aplicarEncuadre();
+    $('encuadre').classList.add('abierto');
+  }
+
+  function cerrarEncuadre() {
+    $('encuadre').classList.remove('abierto');
+    $('encuadre-img').src = '';
+    encuadreIdx = -1;
+  }
+
+  function guardarEncuadre() {
+    if (encuadreIdx < 0) return;
+    var foto = normFoto(formFotos[encuadreIdx]);
+    formFotos[encuadreIdx] = {
+      src: foto.src,
+      pos: Math.round(encuadrePos.x) + '% ' + Math.round(encuadrePos.y) + '%',
+      entera: encuadreEntera
+    };
     pintarMiniaturas();
+  }
+
+  (function habilitarArrastre() {
+    var marco = $('encuadre-marco');
+    var arrastrando = false;
+    var ultimo = null;
+
+    function empezar(ev) {
+      if (encuadreEntera) return;
+      arrastrando = true;
+      ultimo = punto(ev);
+      marco.style.cursor = 'grabbing';
+    }
+
+    function punto(ev) {
+      var t = ev.touches && ev.touches[0] ? ev.touches[0] : ev;
+      return { x: t.clientX, y: t.clientY };
+    }
+
+    function mover(ev) {
+      if (!arrastrando) return;
+      ev.preventDefault();
+      var p = punto(ev);
+      var caja = marco.getBoundingClientRect();
+      /* Arrastrar hacia abajo debe enseñar la parte de arriba de la foto */
+      encuadrePos.x = Math.min(100, Math.max(0, encuadrePos.x - ((p.x - ultimo.x) / caja.width) * 130));
+      encuadrePos.y = Math.min(100, Math.max(0, encuadrePos.y - ((p.y - ultimo.y) / caja.height) * 130));
+      ultimo = p;
+      aplicarEncuadre();
+    }
+
+    function soltar() {
+      arrastrando = false;
+      marco.style.cursor = 'grab';
+    }
+
+    marco.addEventListener('mousedown', empezar);
+    marco.addEventListener('touchstart', empezar, { passive: true });
+    document.addEventListener('mousemove', mover);
+    document.addEventListener('touchmove', mover, { passive: false });
+    document.addEventListener('mouseup', soltar);
+    document.addEventListener('touchend', soltar);
+  })();
+
+  $('encuadre-entera').addEventListener('click', function () {
+    encuadreEntera = !encuadreEntera;
+    aplicarEncuadre();
+  });
+
+  $('encuadre-centrar').addEventListener('click', function () {
+    encuadrePos = { x: 50, y: 50 };
+    encuadreEntera = false;
+    aplicarEncuadre();
+  });
+
+  $('encuadre-listo').addEventListener('click', function () {
+    guardarEncuadre();
+    cerrarEncuadre();
+  });
+
+  $('encuadre').addEventListener('click', function (ev) {
+    if (ev.target === $('encuadre')) { guardarEncuadre(); cerrarEncuadre(); }
   });
 
   /* Guardar */
@@ -1255,17 +1653,20 @@
     var alimentoPendiente = $('campo-alimento').value.trim();
     if (alimentoPendiente) {
       var nombre = alimentoPendiente.charAt(0).toUpperCase() + alimentoPendiente.slice(1);
-      formAlimentos.push({ n: nombre, e: emojiPara(nombre) });
+      formAlimentos.push({ n: nombre, e: emojiPara(nombre, formTipo) });
     }
 
     var nota = $('campo-nota').value.trim();
     if (!formAlimentos.length && !nota && !formFotos.length) {
-      aviso('Añade al menos un alimento, una nota o una foto');
+      aviso(formTipo === 'lugar'
+        ? 'Añade al menos un lugar, una nota o una foto'
+        : 'Añade al menos un alimento, una nota o una foto');
       return;
     }
 
     var entrada = {
       id: editandoId || ('e' + Date.now() + Math.random().toString(36).slice(2, 7)),
+      tipo: formTipo,
       fecha: $('campo-fecha').value || hoyISO(),
       alimentos: formAlimentos,
       reaccion: formReaccion,
@@ -1283,10 +1684,11 @@
       var idx = entradas.findIndex(function (e) { return e.id === entrada.id; });
       if (idx >= 0) entradas[idx] = entrada; else entradas.push(entrada);
       btn.disabled = false;
+      var eraEdicion = !!editandoId;
       cerrarHoja();
       cambiarPestana('diario');
       pintarTodo();
-      aviso(editandoId ? 'Entrada actualizada ✓' : 'Guardado en el diario ✓');
+      aviso(eraEdicion ? 'Entrada actualizada ✓' : 'Guardado en el diario ✓');
       sincronizar();
     }).catch(function () {
       btn.disabled = false;
@@ -1335,14 +1737,76 @@
 
     var foto = ev.target.closest('[data-ver]');
     if (foto) {
-      $('visor-img').src = foto.src;
-      $('visor').classList.add('abierto');
+      var partes = foto.dataset.ver.split(':');
+      abrirVisor(partes[0], Number(partes[1]));
     }
   });
 
-  $('visor').addEventListener('click', function () {
+  /* ── Visor de fotos ─────────────────────── */
+
+  var visorFotos = [];
+  var visorIdx = 0;
+
+  function pintarVisor() {
+    var foto = normFoto(visorFotos[visorIdx]);
+    $('visor-img').src = foto.src;
+    $('visor-contador').textContent = visorFotos.length > 1
+      ? (visorIdx + 1) + ' / ' + visorFotos.length : '';
+    $('visor-antes').hidden = visorFotos.length < 2;
+    $('visor-despues').hidden = visorFotos.length < 2;
+  }
+
+  function abrirVisor(idEntrada, i) {
+    var entrada = entradas.find(function (e) { return e.id === idEntrada; });
+    if (!entrada || !entrada.fotos || !entrada.fotos.length) return;
+    visorFotos = entrada.fotos;
+    visorIdx = Math.min(Math.max(0, i), visorFotos.length - 1);
+    pintarVisor();
+    $('visor').classList.add('abierto');
+  }
+
+  function cerrarVisor() {
     $('visor').classList.remove('abierto');
     $('visor-img').src = '';
+    visorFotos = [];
+  }
+
+  function moverVisor(paso) {
+    if (visorFotos.length < 2) return;
+    visorIdx = (visorIdx + paso + visorFotos.length) % visorFotos.length;
+    pintarVisor();
+  }
+
+  $('visor-antes').addEventListener('click', function (ev) { ev.stopPropagation(); moverVisor(-1); });
+  $('visor-despues').addEventListener('click', function (ev) { ev.stopPropagation(); moverVisor(1); });
+  $('visor-cerrar').addEventListener('click', cerrarVisor);
+
+  $('visor').addEventListener('click', function (ev) {
+    if (ev.target === $('visor')) cerrarVisor();
+  });
+
+  $('visor-img').addEventListener('click', function (ev) { ev.stopPropagation(); });
+
+  /* Deslizar con el dedo para pasar de foto */
+  (function deslizarVisor() {
+    var x0 = null;
+    var v = $('visor');
+    v.addEventListener('touchstart', function (ev) {
+      x0 = ev.touches[0].clientX;
+    }, { passive: true });
+    v.addEventListener('touchend', function (ev) {
+      if (x0 === null) return;
+      var dx = ev.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 50) moverVisor(dx < 0 ? 1 : -1);
+      x0 = null;
+    });
+  })();
+
+  document.addEventListener('keydown', function (ev) {
+    if (!$('visor').classList.contains('abierto')) return;
+    if (ev.key === 'ArrowLeft') moverVisor(-1);
+    else if (ev.key === 'ArrowRight') moverVisor(1);
+    else if (ev.key === 'Escape') cerrarVisor();
   });
 
   /* ── Copia de seguridad ─────────────────── */
