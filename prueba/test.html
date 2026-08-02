@@ -1965,6 +1965,9 @@
   }
 
   $('btn-ajustes').addEventListener('click', function () {
+    /* Lo repintamos al abrir: así siempre sale al día aunque la app
+       acabe de arrancar y todavía no haya pintado nada */
+    pintarAjustes();
     $('overlay').classList.add('abierta');
     $('hoja-ajustes').classList.add('abierta');
   });
