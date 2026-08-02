@@ -168,8 +168,9 @@
 
   h1 {
     margin: 0;
-    font-size: 1.7rem;
+    font-size: 1.55rem;
     text-wrap: balance;
+    overflow-wrap: break-word;
   }
 
   .subtitulo {
@@ -185,15 +186,18 @@
   }
 
   .tab {
-    flex: 1;
-    padding: 10px 4px;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 10px 3px;
     border-radius: 999px;
     background: var(--card);
     color: var(--ink-soft);
     font-weight: 700;
-    font-size: .78rem;
+    font-size: .74rem;
     text-align: center;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     box-shadow: var(--shadow);
     transition: background .2s, color .2s;
   }
