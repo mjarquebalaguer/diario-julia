@@ -2586,10 +2586,19 @@
   (async function () {
     try {
       await hasta(function () { return !$('carga'); });
+      function foto() {
+        return 'D' + $('vista-diario').innerHTML.length +
+          '/A' + $('vista-alimentos').innerHTML.length +
+          '/L' + $('vista-lugares').innerHTML.length +
+          '/J' + $('vista-ajustes').innerHTML.length;
+      }
+      R.push('DIAG inicio ' + foto());
 
       await apuntar('diario', 'platano', '2026-07-01');
+      R.push('DIAG tras-comida ' + foto() + ' hoja=' + $('hoja').className);
       await apuntar('lugares', 'parque', '2026-07-02');
       await apuntar('lugares', 'playa', '2026-07-03');
+      R.push('DIAG tras-lugares ' + foto());
 
       /* 1) El diario solo enseña comidas */
       var vd = $('vista-diario');
