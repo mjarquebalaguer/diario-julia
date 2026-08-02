@@ -2610,9 +2610,11 @@
       toca(borrar);
       ok('pide-confirmacion', borrar.textContent.indexOf('Borrar') >= 0, borrar.textContent);
       toca(borrar);
-      await esperar(600);
+      await hasta(function () { return vl.querySelectorAll('article.dia').length === 1; }, 150);
       ok('borrar-desde-lugares', vl.querySelectorAll('article.dia').length === 1,
         'n=' + vl.querySelectorAll('article.dia').length);
+      ok('borrar-baja-contador', vl.querySelectorAll('.stat .num')[0].textContent === '1',
+        vl.querySelectorAll('.stat .num')[0].textContent);
 
       await hasta(function () { return !$('carga'); });
       ok('relojito-al-final', !$('carga'));
