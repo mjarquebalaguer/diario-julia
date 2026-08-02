@@ -2233,21 +2233,33 @@
 <script>
 setTimeout(function () {
   var d = document.documentElement;
-  var vp = d.clientWidth;
-  var culpables = [];
-  var todos = document.querySelectorAll('body *');
-  for (var i = 0; i < todos.length; i++) {
-    var el = todos[i];
-    var r = el.getBoundingClientRect();
-    if (r.width > vp + 1) {
+  var ANCHO = 360;
+  d.style.width = ANCHO + 'px';
+  d.style.overflowX = 'hidden';
+  document.body.offsetWidth;
+
+  setTimeout(function () {
+    var culpables = [];
+    var todos = document.querySelectorAll('body *');
+    for (var i = 0; i < todos.length; i++) {
+      var el = todos[i];
       var est = getComputedStyle(el);
-      if (est.position === 'fixed') continue;
-      culpables.push(el.tagName + '#' + (el.id || '-') + '.' + (typeof el.className === 'string' ? el.className.split(' ')[0] : '-') +
-        ' w=' + Math.round(r.width));
+      if (est.position === 'fixed' || est.display === 'none') continue;
+      var r = el.getBoundingClientRect();
+      if (r.right > ANCHO + 1 || r.width > ANCHO + 1) {
+        culpables.push(el.tagName + '#' + (el.id || '-') +
+          '.' + (typeof el.className === 'string' ? (el.className.split(' ')[0] || '-') : '-') +
+          ' w=' + Math.round(r.width) + ' dcha=' + Math.round(r.right));
+      }
     }
-  }
-  document.title = 'VP=' + vp + ' SCROLL=' + d.scrollWidth + ' >> ' + (culpables.length ? culpables.slice(0, 10).join(' | ') : 'NINGUNO');
-}, 600);
+    var tabs = document.querySelectorAll('.tab');
+    var anchosTabs = [];
+    for (var j = 0; j < tabs.length; j++) anchosTabs.push(Math.round(tabs[j].getBoundingClientRect().width));
+    document.title = 'A' + ANCHO + ' scroll=' + document.body.scrollWidth +
+      ' tabs=[' + anchosTabs.join(',') + '] >> ' +
+      (culpables.length ? culpables.slice(0, 6).join(' | ') : 'SIN DESBORDES');
+  }, 300);
+}, 700);
 </script>
 
 </body>
