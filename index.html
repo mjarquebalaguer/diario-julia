@@ -836,7 +836,7 @@
     padding: 7px 8px 7px 12px;
   }
 
-  .chip-form button {
+  .chip-form .chip-quitar {
     width: 24px;
     height: 24px;
     border-radius: 999px;
@@ -846,6 +846,48 @@
     place-items: center;
     color: inherit;
   }
+
+  /* El icono se puede tocar para cambiarlo */
+  .chip-form .chip-emoji {
+    font-size: 1.05rem;
+    line-height: 1;
+    padding: 3px 5px;
+    border-radius: 8px;
+    border: 1.5px dashed rgba(0, 0, 0, .22);
+    color: inherit;
+  }
+
+  .chip-form .chip-emoji:active { background: rgba(0, 0, 0, .1); }
+
+  .pista-iconos {
+    margin: 8px 2px 0;
+    font-size: .8rem;
+    color: var(--ink-soft);
+  }
+
+  .rejilla-emojis {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+    gap: 6px;
+    margin: 8px 0 16px;
+    max-height: 46dvh;
+    overflow-y: auto;
+  }
+
+  .emoji-btn {
+    aspect-ratio: 1;
+    border-radius: 12px;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    font-size: 1.4rem;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+  }
+
+  .emoji-btn:active { background: var(--accent-soft); }
+
+  .btn-auto { width: 100%; display: block; }
 
   .reacciones { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 
@@ -1368,6 +1410,7 @@
       <button class="btn-anadir" id="btn-anadir-alimento">Añadir</button>
     </div>
     <div class="chips-form" id="chips-form"></div>
+    <p class="pista-iconos" id="pista-iconos" hidden>Toca un icono para cambiarlo por otro.</p>
   </div>
 
   <div class="campo">
@@ -1418,6 +1461,18 @@
     </div>
     <button class="btn-guardar display" id="encuadre-listo">Listo</button>
   </div>
+</div>
+
+<div class="hoja" id="hoja-emoji" role="dialog" aria-label="Elegir icono">
+  <div class="agarre"><div class="asa"></div></div>
+  <h2 class="display" id="emoji-titulo">Elige un icono</h2>
+  <div class="campo">
+    <label for="emoji-propio">Escribe o pega el que quieras</label>
+    <input type="text" id="emoji-propio" maxlength="8" placeholder="Ej. 🍓" autocomplete="off">
+  </div>
+  <span class="etiqueta">O elige uno de estos</span>
+  <div class="rejilla-emojis" id="rejilla-emojis"></div>
+  <button class="btn-secundario btn-auto" id="emoji-auto">↩️ Volver al icono automático</button>
 </div>
 
 <div class="hoja" id="hoja-ajustes" role="dialog" aria-label="Ajustes">
@@ -1482,7 +1537,7 @@
     return texto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
   }
 
-  function emojiPara(nombre, tipo) {
+  function emojiDelMapa(nombre, tipo) {
     var mapa = tipo === 'lugar' ? EMOJIS_LUGAR : EMOJIS;
     var n = normalizar(nombre);
     if (mapa[n]) return mapa[n];
@@ -1491,6 +1546,26 @@
       if (n.indexOf(claves[i]) !== -1) return mapa[claves[i]];
     }
     return tipo === 'lugar' ? '📍' : '🍽️';
+  }
+
+  /* Si ya elegiste icono para esto alguna vez, se reutiliza el más reciente.
+     Como las entradas se sincronizan, tu elección viaja a los demás móviles. */
+  function emojiRecordado(nombre, tipo) {
+    var n = normalizar(nombre);
+    var mejor = null;
+    entradas.forEach(function (e) {
+      if (esLugar(e) !== (tipo === 'lugar')) return;
+      (e.alimentos || []).forEach(function (a) {
+        if (normalizar(a.n) !== n) return;
+        var cuando = e.mod || e.creado || 0;
+        if (!mejor || cuando > mejor.cuando) mejor = { cuando: cuando, e: a.e };
+      });
+    });
+    return mejor ? mejor.e : null;
+  }
+
+  function emojiPara(nombre, tipo) {
+    return emojiRecordado(nombre, tipo) || emojiDelMapa(nombre, tipo);
   }
 
   /* Formatos que han existido: texto suelto, {src,pos}, {src,pos,z,x,y} (todos
@@ -2044,9 +2119,14 @@
 
   function pintarChipsForm() {
     $('chips-form').innerHTML = formAlimentos.map(function (a, i) {
-      return '<span class="chip-form"><span>' + esc(a.e) + '</span>' + esc(a.n) +
-        '<button data-quitar="' + i + '" aria-label="Quitar ' + esc(a.n) + '">✕</button></span>';
+      return '<span class="chip-form">' +
+        '<button class="chip-emoji" data-emoji="' + i + '" aria-label="Cambiar el icono de ' + esc(a.n) + '">' +
+          esc(a.e) + '</button>' +
+        esc(a.n) +
+        '<button class="chip-quitar" data-quitar="' + i + '" aria-label="Quitar ' + esc(a.n) + '">✕</button>' +
+      '</span>';
     }).join('');
+    $('pista-iconos').hidden = !formAlimentos.length;
   }
 
   function pintarMiniaturas() {
@@ -2064,7 +2144,9 @@
        una encima de otra y no se podía tocar el formulario */
     $('hoja-dia').classList.remove('abierta');
     $('hoja-ajustes').classList.remove('abierta');
+    $('hoja-emoji').classList.remove('abierta');
     diaAbierto = null;
+    emojiIdx = -1;
 
     editandoId = entrada ? entrada.id : null;
     formAlimentos = entrada ? (entrada.alimentos || []).slice() : [];
@@ -2102,14 +2184,22 @@
   /* Tocar fuera cierra la hoja que esté abierta, sea cual sea */
   function cerrarTodasLasHojas() {
     $('overlay').classList.remove('abierta');
-    ['hoja', 'hoja-ajustes', 'hoja-dia'].forEach(function (h) {
+    ['hoja', 'hoja-ajustes', 'hoja-dia', 'hoja-emoji'].forEach(function (h) {
       $(h).classList.remove('abierta');
     });
     diaAbierto = null;
+    emojiIdx = -1;
+  }
+
+  /* Al salir del selector de iconos volvemos al formulario, para no
+     perder lo que estabas escribiendo */
+  function salirDeHoja() {
+    if ($('hoja-emoji').classList.contains('abierta')) cerrarSelectorEmoji();
+    else cerrarTodasLasHojas();
   }
 
   $('btn-nueva').addEventListener('click', function () { abrirHoja(null); });
-  $('overlay').addEventListener('click', cerrarTodasLasHojas);
+  $('overlay').addEventListener('click', salirDeHoja);
 
   /* ── Deslizar la hoja hacia abajo para cerrarla ── */
 
@@ -2170,7 +2260,7 @@
       /* Un empujón decidido la cierra; si no, vuelve a su sitio */
       if (dy > 90) {
         colocar(window.innerHeight, true);
-        setTimeout(function () { cerrarTodasLasHojas(); limpiar(); }, 220);
+        setTimeout(function () { salirDeHoja(); limpiar(); }, 220);
       } else {
         colocar(0, true);
         setTimeout(limpiar, 260);
@@ -2182,11 +2272,11 @@
 
     /* Tocar la barrita también cierra, por si prefieres tocar */
     agarre.addEventListener('click', function () {
-      if (!activo && dy === 0) cerrarTodasLasHojas();
+      if (!activo && dy === 0) salirDeHoja();
     });
   }
 
-  ['hoja', 'hoja-ajustes', 'hoja-dia'].forEach(arrastrarHoja);
+  ['hoja', 'hoja-ajustes', 'hoja-dia', 'hoja-emoji'].forEach(arrastrarHoja);
 
   function anadirAlimento() {
     var campo = $('campo-alimento');
@@ -2205,10 +2295,92 @@
   });
 
   $('chips-form').addEventListener('click', function (ev) {
-    var btn = ev.target.closest('[data-quitar]');
-    if (!btn) return;
-    formAlimentos.splice(Number(btn.dataset.quitar), 1);
+    var quitar = ev.target.closest('[data-quitar]');
+    if (quitar) {
+      formAlimentos.splice(Number(quitar.dataset.quitar), 1);
+      pintarChipsForm();
+      return;
+    }
+    var cambiar = ev.target.closest('[data-emoji]');
+    if (cambiar) abrirSelectorEmoji(Number(cambiar.dataset.emoji));
+  });
+
+  /* ── Elegir el icono a mano ─────────────── */
+
+  /* Van uno a uno en la lista: si se parte una cadena carácter a carácter,
+     los emojis con modificador (🏖️, ⛰️…) se rompen en dos trozos */
+  var SUGERENCIAS = {
+    comida: ['🍌', '🍎', '🍐', '🍊', '🍋', '🍓', '🍇', '🍉', '🍈', '🍑', '🍒', '🫐',
+      '🥝', '🥭', '🍍', '🥥', '🥑', '🍅', '🥕', '🥦', '🥬', '🥒', '🌽', '🥔', '🍠',
+      '🧅', '🧄', '🍆', '🫑', '🫘', '🥜', '🌰', '🍄', '🍚', '🍝', '🍜', '🍞', '🥖',
+      '🥐', '🥣', '🥛', '🧀', '🥚', '🍳', '🍗', '🍖', '🥩', '🐟', '🍤', '🫒', '🧈',
+      '🍪', '🍯', '🥤', '💧', '🥗', '🍫', '🎂', '🍽️'],
+    lugar: ['🌳', '🌲', '🌴', '🌱', '🌾', '🏖️', '🌊', '🏊', '🏞️', '⛰️', '🏔️', '🏕️',
+      '⛺', '🏛️', '📚', '🎬', '🎭', '🎪', '🦁', '🐠', '🐴', '🚜', '🎡', '🎠', '🛝',
+      '⛲', '🍽️', '☕', '🧺', '🛒', '🛍️', '🏠', '🏘️', '🏙️', '🏨', '⛵', '🚂', '✈️',
+      '🚗', '🚌', '🩺', '🏥', '🏫', '🧸', '⛪', '🏰', '🌉', '🗼', '🔭', '❄️', '🚶',
+      '🥾', '📍']
+  };
+
+  var emojiIdx = -1;
+
+  function abrirSelectorEmoji(i) {
+    emojiIdx = i;
+    var a = formAlimentos[i];
+    $('emoji-titulo').textContent = 'Icono para «' + a.n + '»';
+    $('emoji-propio').value = '';
+    var lista = SUGERENCIAS[formTipo === 'lugar' ? 'lugar' : 'comida'];
+    $('rejilla-emojis').innerHTML = lista.map(function (e) {
+      return '<button class="emoji-btn" data-elegir="' + esc(e) + '">' + esc(e) + '</button>';
+    }).join('');
+    $('hoja').classList.remove('abierta');
+    $('overlay').classList.add('abierta');
+    $('hoja-emoji').classList.add('abierta');
+  }
+
+  function ponerEmoji(e) {
+    if (emojiIdx < 0) return;
+    formAlimentos[emojiIdx].e = e;
+    cerrarSelectorEmoji();
+  }
+
+  function cerrarSelectorEmoji() {
+    $('hoja-emoji').classList.remove('abierta');
+    emojiIdx = -1;
     pintarChipsForm();
+    /* Volvemos al formulario, que es de donde veníamos */
+    $('overlay').classList.add('abierta');
+    $('hoja').classList.add('abierta');
+  }
+
+  $('rejilla-emojis').addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-elegir]');
+    if (b) ponerEmoji(b.dataset.elegir);
+  });
+
+  /* Coge el primer símbolo completo, aunque lleve modificadores */
+  function primerSimbolo(txt) {
+    var t = (txt || '').trim();
+    if (!t) return '';
+    try {
+      if (window.Intl && Intl.Segmenter) {
+        var trozos = new Intl.Segmenter('es', { granularity: 'grapheme' }).segment(t);
+        for (var trozo of trozos) return trozo.segment;
+      }
+    } catch (e) {}
+    return t;
+  }
+
+  $('emoji-propio').addEventListener('input', function () {
+    var e = primerSimbolo(this.value);
+    if (e) ponerEmoji(e);
+  });
+
+  $('emoji-auto').addEventListener('click', function () {
+    if (emojiIdx < 0) return;
+    var a = formAlimentos[emojiIdx];
+    formAlimentos[emojiIdx].e = emojiDelMapa(a.n, formTipo);
+    cerrarSelectorEmoji();
   });
 
   $('reacciones').addEventListener('click', function (ev) {
@@ -2786,7 +2958,8 @@
         $('encuadre').classList.contains('abierto') ||
         $('hoja').classList.contains('abierta') ||
         $('hoja-ajustes').classList.contains('abierta') ||
-        $('hoja-dia').classList.contains('abierta');
+        $('hoja-dia').classList.contains('abierta') ||
+        $('hoja-emoji').classList.contains('abierta');
     }
 
     function arriba() {
