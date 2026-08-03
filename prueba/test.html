@@ -3079,11 +3079,26 @@
       ok('titulo-pestana', document.title.indexOf('Diario de Júlia') >= 0, document.title);
       ok('titulo-pantalla', document.querySelector('h1').textContent.indexOf('Diario de Júlia') >= 0,
         document.querySelector('h1').textContent);
-      ok('sin-nombre-viejo', document.body.textContent.indexOf('Primeros alimentos') < 0);
+      /* Miramos solo lo que se ve, no el texto de este propio script */
+      ok('sin-nombre-viejo',
+        document.querySelector('header.top').textContent.indexOf('alimentos de') < 0,
+        document.querySelector('header.top').textContent.slice(0, 40));
 
-      /* --- Apuntamos un día de cada carita, con foto --- */
+      /* --- Un día de cada carita, todos dentro del mes que se ve --- */
       var hoy = new Date();
-      var dia = function (n) { return iso(new Date(hoy.getTime() + n * 86400000)); };
+      var diaDelMes = function (n) {
+        return iso(new Date(hoy.getFullYear(), hoy.getMonth(), n));
+      };
+      var hoyN = hoy.getDate();
+      /* Elegimos días del mes distintos entre sí y distintos de hoy */
+      var libres = [];
+      for (var k = 1; k <= 28 && libres.length < 5; k++) if (k !== hoyN) libres.push(k);
+      var dEnc = diaDelMes(libres[0]);
+      var dBien = diaDelMes(libres[1]);
+      var dReg = diaDelMes(libres[2]);
+      var dMal = diaDelMes(libres[3]);
+      var dSin = diaDelMes(hoyN);
+      var dFut = iso(new Date(hoy.getTime() + 2 * 86400000));
 
       async function apunta(cosa, reaccion, fecha, conFoto, esperado) {
         toca($('btn-nueva'));
@@ -3112,12 +3127,12 @@
         await esperar(120);
       }
 
-      await apunta('platano', 'encanto', dia(-4), true, 1);
-      await apunta('pera', 'bien', dia(-3), false, 2);
-      await apunta('arroz', 'regular', dia(-2), false, 3);
-      await apunta('brocoli', 'mal', dia(-1), true, 4);
-      await apunta('agua', null, dia(0), false, 5);
-      await apunta('kiwi', null, dia(2), false, 6);
+      await apunta('platano', 'encanto', dEnc, true, 1);
+      await apunta('pera', 'bien', dBien, false, 2);
+      await apunta('arroz', 'regular', dReg, false, 3);
+      await apunta('brocoli', 'mal', dMal, true, 4);
+      await apunta('agua', null, dSin, false, 5);
+      await apunta('kiwi', null, dFut, false, 6);
 
       /* --- 2. Calendario sin fotos --- */
       toca($('ver-calendario'));
@@ -3132,12 +3147,12 @@
       ok('con-emojis', panel.querySelector('.emojis-dia').textContent.length > 0);
 
       /* --- 3. Cada día con su color --- */
-      var cEnc = panel.querySelector('[data-dia="' + dia(-4) + '"]');
-      var cBien = panel.querySelector('[data-dia="' + dia(-3) + '"]');
-      var cReg = panel.querySelector('[data-dia="' + dia(-2) + '"]');
-      var cMal = panel.querySelector('[data-dia="' + dia(-1) + '"]');
-      var cSin = panel.querySelector('[data-dia="' + dia(0) + '"]');
-      var cFut = panel.querySelector('[data-dia="' + dia(2) + '"]');
+      var cEnc = panel.querySelector('[data-dia="' + dEnc + '"]');
+      var cBien = panel.querySelector('[data-dia="' + dBien + '"]');
+      var cReg = panel.querySelector('[data-dia="' + dReg + '"]');
+      var cMal = panel.querySelector('[data-dia="' + dMal + '"]');
+      var cSin = panel.querySelector('[data-dia="' + dSin + '"]');
+      var cFut = panel.querySelector('[data-dia="' + dFut + '"]');
 
       ok('clase-encanto', cEnc && cEnc.classList.contains('r-encanto'), cEnc && cEnc.className);
       ok('clase-bien', cBien && cBien.classList.contains('r-bien'));
