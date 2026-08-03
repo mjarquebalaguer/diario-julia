@@ -758,6 +758,29 @@
 
   .hoja.arrastrando { animation: none; transition: none; }
 
+  /* La hoja de un día sale a pantalla casi completa, con el contenido
+     desplazándose por dentro y el botón siempre abajo */
+  #hoja-dia {
+    height: 92vh;   /* respaldo para móviles antiguos */
+    height: 92dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #hoja-dia .agarre,
+  #hoja-dia h2,
+  #btn-apuntar-dia { flex-shrink: 0; }
+
+  #dentro-dia {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #btn-apuntar-dia { margin-top: 14px; }
+
   .hoja h2 { margin: 0 0 16px; font-size: 1.25rem; }
 
   .campo { margin-bottom: 18px; }
@@ -1403,7 +1426,7 @@
 <div class="hoja" id="hoja-dia" role="dialog" aria-label="Lo de ese día">
   <div class="agarre"><div class="asa"></div></div>
   <h2 class="display" id="hoja-dia-titulo">Día</h2>
-  <div id="dentro-dia"></div>
+  <div id="dentro-dia" class="cuerpo-hoja"></div>
   <button class="btn-guardar display" id="btn-apuntar-dia">＋ Apuntar en este día</button>
 </div>
 
@@ -2033,6 +2056,12 @@
   }
 
   function abrirHoja(entrada, fechaSugerida) {
+    /* Si veníamos de la hoja de un día, la cerramos: si no, se quedaban
+       una encima de otra y no se podía tocar el formulario */
+    $('hoja-dia').classList.remove('abierta');
+    $('hoja-ajustes').classList.remove('abierta');
+    diaAbierto = null;
+
     editandoId = entrada ? entrada.id : null;
     formAlimentos = entrada ? (entrada.alimentos || []).slice() : [];
     formReaccion = entrada ? entrada.reaccion : null;
@@ -2083,8 +2112,11 @@
   function arrastrarHoja(idHoja) {
     var hoja = $(idHoja);
     var agarre = hoja.querySelector('.agarre');
-    var y0 = null;
-    var dy = 0;
+    var y0 = null, x0 = 0, dy = 0;
+    var activo = false;
+
+    /* Lo que se desplaza por dentro: en la hoja del día es su cuerpo */
+    function zona() { return hoja.querySelector('.cuerpo-hoja') || hoja; }
 
     function colocar(d, animar) {
       hoja.style.transition = animar ? 'transform .25s ease-out' : 'none';
@@ -2097,23 +2129,40 @@
       hoja.style.transform = '';
     }
 
-    agarre.addEventListener('touchstart', function (ev) {
-      if (ev.touches.length !== 1) return;
+    hoja.addEventListener('touchstart', function (ev) {
+      if (ev.touches.length !== 1) { y0 = null; return; }
+      var enAgarre = !!ev.target.closest('.agarre');
+      /* Escribiendo una nota no queremos cerrar sin querer */
+      if (!enAgarre && ev.target.closest('input, textarea')) { y0 = null; return; }
+      /* Desde el medio solo se puede tirar si ya estás arriba del todo */
+      if (!enAgarre && zona().scrollTop > 0) { y0 = null; return; }
       y0 = ev.touches[0].clientY;
+      x0 = ev.touches[0].clientX;
       dy = 0;
-      hoja.classList.add('arrastrando');
+      activo = false;
     }, { passive: true });
 
-    agarre.addEventListener('touchmove', function (ev) {
+    hoja.addEventListener('touchmove', function (ev) {
       if (y0 === null) return;
+      var d = ev.touches[0].clientY - y0;
+      var dx = ev.touches[0].clientX - x0;
+      if (!activo) {
+        /* De lado no cuenta, y hacia arriba tampoco */
+        if (Math.abs(dx) > Math.abs(d)) { y0 = null; return; }
+        if (d < 6) return;
+        activo = true;
+        hoja.classList.add('arrastrando');
+      }
       ev.preventDefault();
-      dy = Math.max(0, ev.touches[0].clientY - y0);
+      dy = Math.max(0, d);
       colocar(dy, false);
     }, { passive: false });
 
     function soltar() {
       if (y0 === null) return;
       y0 = null;
+      if (!activo) return;
+      activo = false;
       /* Un empujón decidido la cierra; si no, vuelve a su sitio */
       if (dy > 90) {
         colocar(window.innerHeight, true);
@@ -2124,12 +2173,12 @@
       }
     }
 
-    agarre.addEventListener('touchend', soltar);
-    agarre.addEventListener('touchcancel', soltar);
+    hoja.addEventListener('touchend', soltar);
+    hoja.addEventListener('touchcancel', soltar);
 
-    /* Tocar el asa también cierra, por si prefieres tocar */
+    /* Tocar la barrita también cierra, por si prefieres tocar */
     agarre.addEventListener('click', function () {
-      if (dy === 0) cerrarTodasLasHojas();
+      if (!activo && dy === 0) cerrarTodasLasHojas();
     });
   }
 
