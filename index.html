@@ -39,11 +39,12 @@
     --coral: #F2AF9F;
     --on-coral: #5C3026;
     --coral-ink: #A85843;
-    --dia-encanto: #F6D06B;
-    --dia-bien: #A2CE84;
-    --dia-regular: #D8D3C6;
-    --dia-mal: #EE9C86;
+    --dia-encanto: #6FB84F;
+    --dia-bien: #CBE6AC;
+    --dia-regular: #F6C95C;
+    --dia-mal: #EE8E74;
     --dia-suelto: #FFFFFF;
+    --dia-plan: #CDCAC1;
     --dia-texto: #33402C;
     --green: #5A7A42;
     --green-soft: #EDF4E1;
@@ -72,12 +73,13 @@
       --coral: #E8A091;
       --on-coral: #33201B;
       --coral-ink: #F0B3A5;
-      --dia-encanto: #C9A43C;
-      --dia-bien: #7FAF63;
-      --dia-regular: #7C7D71;
-      --dia-mal: #C97759;
+      --dia-encanto: #5FA843;
+      --dia-bien: #3B6B34;
+      --dia-regular: #A8842B;
+      --dia-mal: #B5644B;
       --dia-suelto: #46503F;
-      --dia-texto: #1C2417;
+      --dia-plan: #5E605A;
+      --dia-texto: #EDF2E6;
       --green: #B4D19C;
       --green-soft: #37422E;
       --regular-soft: #3A4235;
@@ -105,11 +107,12 @@
     --coral: #F2AF9F;
     --on-coral: #5C3026;
     --coral-ink: #A85843;
-    --dia-encanto: #F6D06B;
-    --dia-bien: #A2CE84;
-    --dia-regular: #D8D3C6;
-    --dia-mal: #EE9C86;
+    --dia-encanto: #6FB84F;
+    --dia-bien: #CBE6AC;
+    --dia-regular: #F6C95C;
+    --dia-mal: #EE8E74;
     --dia-suelto: #FFFFFF;
+    --dia-plan: #CDCAC1;
     --dia-texto: #33402C;
     --green: #5A7A42;
     --green-soft: #EDF4E1;
@@ -137,12 +140,13 @@
     --coral: #E8A091;
     --on-coral: #33201B;
     --coral-ink: #F0B3A5;
-    --dia-encanto: #C9A43C;
-    --dia-bien: #7FAF63;
-    --dia-regular: #7C7D71;
-    --dia-mal: #C97759;
+    --dia-encanto: #5FA843;
+    --dia-bien: #3B6B34;
+    --dia-regular: #A8842B;
+    --dia-mal: #B5644B;
     --dia-suelto: #46503F;
-    --dia-texto: #1C2417;
+    --dia-plan: #5E605A;
+    --dia-texto: #EDF2E6;
     --green: #B4D19C;
     --green-soft: #37422E;
     --regular-soft: #3A4235;
@@ -332,6 +336,7 @@
     gap: 5px;
   }
 
+
   .semana-cabecera {
     margin-bottom: 6px;
   }
@@ -348,6 +353,8 @@
   .dia-celda {
     position: relative;
     aspect-ratio: 1;
+    align-self: start;
+    padding: 0;
     border-radius: 11px;
     background: var(--card);
     overflow: hidden;
@@ -358,7 +365,9 @@
 
   .dia-celda.fuera { visibility: hidden; }
 
-  .dia-celda.vacio { background: var(--regular-soft); box-shadow: none; }
+  /* Ojo: no llamar «vacio» a esta clase — ese nombre ya lo usan los mensajes
+     de «no hay nada apuntado», que llevan un padding enorme y deformaba el día */
+  .dia-celda.dia-libre { background: var(--regular-soft); box-shadow: none; }
 
   .dia-celda .num-dia {
     position: absolute;
@@ -393,15 +402,16 @@
   .dia-celda.r-regular .num-dia,
   .dia-celda.r-mal .num-dia { color: var(--dia-texto); opacity: .75; }
 
-  .dia-celda.hoy { outline: 2.5px solid var(--accent); outline-offset: -2.5px; }
-
+  /* Lo planeado para más adelante siempre va en gris, con borde de puntitos */
   .dia-celda.futuro {
+    background: var(--dia-plan);
     border: 1.5px dashed var(--ink-soft);
     box-shadow: none;
-    opacity: .78;
   }
 
-  .dia-celda.futuro .emojis-dia { filter: grayscale(.7); }
+  .dia-celda.futuro .num-dia { color: var(--dia-texto); opacity: .75; }
+
+  .dia-celda.hoy { outline: 2.5px solid var(--accent); outline-offset: -2.5px; }
 
   .leyenda {
     display: flex;
@@ -428,6 +438,7 @@
   .muestra.bien    { background: var(--dia-bien); }
   .muestra.regular { background: var(--dia-regular); }
   .muestra.mal     { background: var(--dia-mal); }
+  .muestra.plan    { background: var(--dia-plan); border-style: dashed; }
 
   /* Tarjetas dentro de la hoja de un día */
   #dentro-dia .dia { box-shadow: none; border: 1.5px solid var(--line); }
@@ -736,6 +747,16 @@
     background: var(--line);
     margin: 4px auto 14px;
   }
+
+  /* Zona de agarre: se puede deslizar hacia abajo para cerrar */
+  .agarre {
+    margin: -10px -20px 4px;
+    padding: 12px 20px 6px;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .hoja.arrastrando { animation: none; transition: none; }
 
   .hoja h2 { margin: 0 0 16px; font-size: 1.25rem; }
 
@@ -1306,7 +1327,7 @@
 <div class="overlay" id="overlay"></div>
 
 <div class="hoja" id="hoja" role="dialog" aria-label="Apuntar una comida">
-  <div class="asa"></div>
+  <div class="agarre"><div class="asa"></div></div>
   <h2 class="display" id="hoja-titulo">Apuntar una comida</h2>
 
   <div class="campo">
@@ -1374,13 +1395,13 @@
 </div>
 
 <div class="hoja" id="hoja-ajustes" role="dialog" aria-label="Ajustes">
-  <div class="asa"></div>
+  <div class="agarre"><div class="asa"></div></div>
   <h2 class="display">⚙️ Ajustes</h2>
   <div id="dentro-ajustes"></div>
 </div>
 
 <div class="hoja" id="hoja-dia" role="dialog" aria-label="Lo de ese día">
-  <div class="asa"></div>
+  <div class="agarre"><div class="asa"></div></div>
   <h2 class="display" id="hoja-dia-titulo">Día</h2>
   <div id="dentro-dia"></div>
   <button class="btn-guardar display" id="btn-apuntar-dia">＋ Apuntar en este día</button>
@@ -1698,7 +1719,10 @@
       var esFuturo = iso > hoy;
 
       if (!delDia.length) {
-        celdas += '<button class="dia-celda vacio' + (esHoy ? ' hoy' : '') + '" data-dia="' + iso + '">' +
+        /* Un día futuro sin nada planeado se queda como día vacío normal:
+           el gris con puntitos es solo para lo que sí has planeado */
+        celdas += '<button class="dia-celda dia-libre' + (esHoy ? ' hoy' : '') +
+          '" data-dia="' + iso + '">' +
           '<span class="num-dia">' + d + '</span></button>';
         continue;
       }
@@ -1740,6 +1764,7 @@
         '<span><i class="muestra bien"></i>Le gustó</span>' +
         '<span><i class="muestra regular"></i>Así así</span>' +
         '<span><i class="muestra mal"></i>No le gustó</span>' +
+        '<span><i class="muestra plan"></i>Planeado</span>' +
       '</div>';
   }
 
@@ -2052,6 +2077,63 @@
 
   $('btn-nueva').addEventListener('click', function () { abrirHoja(null); });
   $('overlay').addEventListener('click', cerrarTodasLasHojas);
+
+  /* ── Deslizar la hoja hacia abajo para cerrarla ── */
+
+  function arrastrarHoja(idHoja) {
+    var hoja = $(idHoja);
+    var agarre = hoja.querySelector('.agarre');
+    var y0 = null;
+    var dy = 0;
+
+    function colocar(d, animar) {
+      hoja.style.transition = animar ? 'transform .25s ease-out' : 'none';
+      hoja.style.transform = 'translateY(' + d + 'px)';
+    }
+
+    function limpiar() {
+      hoja.classList.remove('arrastrando');
+      hoja.style.transition = '';
+      hoja.style.transform = '';
+    }
+
+    agarre.addEventListener('touchstart', function (ev) {
+      if (ev.touches.length !== 1) return;
+      y0 = ev.touches[0].clientY;
+      dy = 0;
+      hoja.classList.add('arrastrando');
+    }, { passive: true });
+
+    agarre.addEventListener('touchmove', function (ev) {
+      if (y0 === null) return;
+      ev.preventDefault();
+      dy = Math.max(0, ev.touches[0].clientY - y0);
+      colocar(dy, false);
+    }, { passive: false });
+
+    function soltar() {
+      if (y0 === null) return;
+      y0 = null;
+      /* Un empujón decidido la cierra; si no, vuelve a su sitio */
+      if (dy > 90) {
+        colocar(window.innerHeight, true);
+        setTimeout(function () { cerrarTodasLasHojas(); limpiar(); }, 220);
+      } else {
+        colocar(0, true);
+        setTimeout(limpiar, 260);
+      }
+    }
+
+    agarre.addEventListener('touchend', soltar);
+    agarre.addEventListener('touchcancel', soltar);
+
+    /* Tocar el asa también cierra, por si prefieres tocar */
+    agarre.addEventListener('click', function () {
+      if (dy === 0) cerrarTodasLasHojas();
+    });
+  }
+
+  ['hoja', 'hoja-ajustes', 'hoja-dia'].forEach(arrastrarHoja);
 
   function anadirAlimento() {
     var campo = $('campo-alimento');
