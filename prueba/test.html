@@ -1315,8 +1315,8 @@
   </nav>
 
   <div class="vistas" role="tablist" aria-label="Forma de verlo">
-    <button class="vista-btn" id="ver-calendario" role="tab" aria-selected="false">🗓️ Calendario</button>
-    <button class="vista-btn" id="ver-diario" role="tab" aria-selected="true">📖 Diario</button>
+    <button class="vista-btn" id="ver-calendario" role="tab" aria-selected="true">🗓️ Calendario</button>
+    <button class="vista-btn" id="ver-diario" role="tab" aria-selected="false">📖 Diario</button>
     <button class="vista-btn" id="ver-lista" role="tab" aria-selected="false">📋 Lista</button>
   </div>
 </header>
@@ -1890,7 +1890,8 @@
   /* ── Qué diario y cómo lo miro ──────────── */
 
   var diarioActual = 'comida';
-  var vistaActual = 'diario';
+  /* Al abrir la app se entra por el calendario de comidas */
+  var vistaActual = 'calendario';
 
   function pintarPanel() {
     var cont = $('panel');
@@ -3224,6 +3225,13 @@
       await esperar(300);
       ok('nada-visible-tras-cargar', visibles().length === 0, visibles().join('+'));
       ok('el-panel-se-ve', $('panel').getBoundingClientRect().height > 0);
+
+      /* --- Se entra por el calendario de comidas --- */
+      ok('arranca-en-calendario', $('ver-calendario').getAttribute('aria-selected') === 'true',
+        'diario=' + $('ver-diario').getAttribute('aria-selected'));
+      ok('arranca-en-comidas', $('tab-comida').getAttribute('aria-selected') === 'true');
+      ok('calendario-pintado-al-arrancar', !!$('panel').querySelector('.rejilla-mes'),
+        $('panel').innerHTML.slice(0, 60));
 
       /* Se puede usar la app: el botón + responde */
       var hoy = new Date();
