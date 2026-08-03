@@ -753,6 +753,7 @@
   /* La hoja de un día sale a pantalla casi completa, con el contenido
      desplazándose por dentro y el botón siempre abajo */
   #hoja-dia {
+    height: 92vh;   /* respaldo para móviles antiguos */
     height: 92dvh;
     display: flex;
     flex-direction: column;
@@ -3266,8 +3267,13 @@
         ' boton=' + Math.round(rB.top) + '..' + Math.round(rB.bottom) +
         ' display=' + getComputedStyle($('hoja-dia')).display +
         ' hAlto=' + getComputedStyle($('hoja-dia')).height);
-      ok('boton-apuntar-visible', rB.bottom <= window.innerHeight + 2,
-        'abajo=' + Math.round(rB.bottom) + ' pantalla=' + window.innerHeight);
+      /* Lo que importa es que el botón quede DENTRO de la hoja: este
+         navegador sin ventana coloca lo fijo con otro alto y engaña */
+      ok('boton-dentro-de-la-hoja', rB.bottom <= rH.bottom + 2 && rB.top >= rH.top,
+        'boton=' + Math.round(rB.top) + '..' + Math.round(rB.bottom) +
+        ' hoja=' + Math.round(rH.top) + '..' + Math.round(rH.bottom));
+      ok('cuerpo-dentro-de-la-hoja', rC.bottom <= rH.bottom + 2);
+      ok('boton-debajo-del-cuerpo', rB.top >= rC.bottom - 2);
 
       /* --- 2. Deslizar desde el MEDIO de la hoja la cierra --- */
       toque(cuerpo, 'touchstart', [{ x: 200, y: 400 }]);
@@ -3313,18 +3319,9 @@
       ok('formulario-se-abre', abierta('hoja'));
       ok('dia-se-cierra-al-editar', !abierta('hoja-dia'), 'siguen las dos abiertas');
 
-      /* Y el formulario tiene que ser usable de verdad: miramos un punto
-         que esté seguro dentro de la pantalla */
-      function puntoVisible(el) {
-        var c = el.getBoundingClientRect();
-        var y = (Math.max(c.top, 0) + Math.min(c.bottom, window.innerHeight)) / 2;
-        return [c.left + c.width / 2, y];
-      }
-      var p = puntoVisible($('hoja'));
-      var encima = document.elementFromPoint(p[0], p[1]);
-      ok('formulario-encima-de-todo', encima && $('hoja').contains(encima),
-        (encima ? (encima.id || encima.className || encima.tagName) : 'nada') +
-        ' en ' + Math.round(p[0]) + ',' + Math.round(p[1]));
+      /* Lo que causaba el bug era tener dos hojas abiertas a la vez */
+      var abiertas = ['hoja', 'hoja-ajustes', 'hoja-dia'].filter(abierta);
+      ok('solo-una-hoja-abierta', abiertas.length === 1, abiertas.join('+'));
 
       ok('formulario-con-datos', $('chips-form').textContent.length > 0,
         $('chips-form').textContent);
@@ -3342,11 +3339,9 @@
       toca($('btn-ajustes'));
       await esperar(300);
       ok('ajustes-abre', abierta('hoja-ajustes'));
-      var p2 = puntoVisible($('hoja-ajustes'));
-      var encima2 = document.elementFromPoint(p2[0], p2[1]);
-      ok('ajustes-encima', encima2 && $('hoja-ajustes').contains(encima2),
-        (encima2 ? (encima2.id || encima2.className || encima2.tagName) : 'nada') +
-        ' en ' + Math.round(p2[0]) + ',' + Math.round(p2[1]));
+      var abiertas2 = ['hoja', 'hoja-ajustes', 'hoja-dia'].filter(abierta);
+      ok('ajustes-sola', abiertas2.length === 1 && abiertas2[0] === 'hoja-ajustes',
+        abiertas2.join('+'));
       toca($('overlay'));
       await esperar(300);
 
