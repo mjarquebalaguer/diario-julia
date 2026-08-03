@@ -346,6 +346,7 @@
     position: relative;
     aspect-ratio: 1;
     align-self: start;
+    padding: 0;
     border-radius: 11px;
     background: var(--card);
     overflow: hidden;
@@ -356,7 +357,9 @@
 
   .dia-celda.fuera { visibility: hidden; }
 
-  .dia-celda.vacio { background: var(--regular-soft); box-shadow: none; }
+  /* Ojo: no llamar «vacio» a esta clase — ese nombre ya lo usan los mensajes
+     de «no hay nada apuntado», que llevan un padding enorme y deformaba el día */
+  .dia-celda.dia-libre { background: var(--regular-soft); box-shadow: none; }
 
   .dia-celda .num-dia {
     position: absolute;
@@ -1708,7 +1711,10 @@
       var esFuturo = iso > hoy;
 
       if (!delDia.length) {
-        celdas += '<button class="dia-celda vacio' + (esHoy ? ' hoy' : '') + '" data-dia="' + iso + '">' +
+        /* Un día futuro sin nada planeado se queda como día vacío normal:
+           el gris con puntitos es solo para lo que sí has planeado */
+        celdas += '<button class="dia-celda dia-libre' + (esHoy ? ' hoy' : '') +
+          '" data-dia="' + iso + '">' +
           '<span class="num-dia">' + d + '</span></button>';
         continue;
       }
@@ -3283,7 +3289,7 @@
 
       /* Comparamos una con icono y una vacía */
       var rIcono = cEnc.getBoundingClientRect();
-      var rVacio = panel.querySelector('.dia-celda.vacio:not(.fuera)').getBoundingClientRect();
+      var rVacio = panel.querySelector('.dia-celda.dia-libre:not(.fuera)').getBoundingClientRect();
       ok('icono-igual-que-vacia',
         Math.abs(rIcono.height - rVacio.height) <= 1.5 && Math.abs(rIcono.width - rVacio.width) <= 1.5,
         Math.round(rIcono.width) + 'x' + Math.round(rIcono.height) + ' vs ' +
