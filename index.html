@@ -760,13 +760,16 @@
 
   /* La hoja de un día sale a pantalla casi completa, con el contenido
      desplazándose por dentro y el botón siempre abajo */
+  /* Ojo: el «display» va SOLO en .abierta. Si se pone aquí, esta regla
+     (por id) le gana a «.hoja { display: none }» y la hoja no se oculta nunca */
   #hoja-dia {
     height: 92vh;   /* respaldo para móviles antiguos */
     height: 92dvh;
-    display: flex;
     flex-direction: column;
     overflow: hidden;
   }
+
+  #hoja-dia.abierta { display: flex; }
 
   #hoja-dia .agarre,
   #hoja-dia h2,
@@ -1320,8 +1323,8 @@
   </nav>
 
   <div class="vistas" role="tablist" aria-label="Forma de verlo">
-    <button class="vista-btn" id="ver-calendario" role="tab" aria-selected="false">🗓️ Calendario</button>
-    <button class="vista-btn" id="ver-diario" role="tab" aria-selected="true">📖 Diario</button>
+    <button class="vista-btn" id="ver-calendario" role="tab" aria-selected="true">🗓️ Calendario</button>
+    <button class="vista-btn" id="ver-diario" role="tab" aria-selected="false">📖 Diario</button>
     <button class="vista-btn" id="ver-lista" role="tab" aria-selected="false">📋 Lista</button>
   </div>
 </header>
@@ -1895,7 +1898,8 @@
   /* ── Qué diario y cómo lo miro ──────────── */
 
   var diarioActual = 'comida';
-  var vistaActual = 'diario';
+  /* Al abrir la app se entra por el calendario de comidas */
+  var vistaActual = 'calendario';
 
   function pintarPanel() {
     var cont = $('panel');
