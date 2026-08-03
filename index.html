@@ -865,29 +865,13 @@
     color: var(--ink-soft);
   }
 
-  .rejilla-emojis {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
-    gap: 6px;
-    margin: 8px 0 16px;
-    max-height: 46dvh;
-    overflow-y: auto;
+  .campo-emoji {
+    font-size: 2rem;
+    text-align: center;
+    padding: 14px;
   }
 
-  .emoji-btn {
-    aspect-ratio: 1;
-    border-radius: 12px;
-    background: var(--card);
-    border: 1.5px solid var(--line);
-    font-size: 1.4rem;
-    line-height: 1;
-    display: grid;
-    place-items: center;
-  }
-
-  .emoji-btn:active { background: var(--accent-soft); }
-
-  .btn-auto { width: 100%; display: block; }
+  .btn-auto { width: 100%; display: block; margin-top: 4px; }
 
   .reacciones { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 
@@ -1467,11 +1451,10 @@
   <div class="agarre"><div class="asa"></div></div>
   <h2 class="display" id="emoji-titulo">Elige un icono</h2>
   <div class="campo">
-    <label for="emoji-propio">Escribe o pega el que quieras</label>
-    <input type="text" id="emoji-propio" maxlength="8" placeholder="Ej. 🍓" autocomplete="off">
+    <label for="emoji-propio">Escribe el icono que quieras</label>
+    <input type="text" id="emoji-propio" class="campo-emoji" maxlength="8" placeholder="🍓" autocomplete="off">
+    <p class="pista-iconos">Toca aquí y usa el teclado de emojis del móvil. También vale una letra.</p>
   </div>
-  <span class="etiqueta">O elige uno de estos</span>
-  <div class="rejilla-emojis" id="rejilla-emojis"></div>
   <button class="btn-secundario btn-auto" id="emoji-auto">↩️ Volver al icono automático</button>
 </div>
 
@@ -2307,21 +2290,6 @@
 
   /* ── Elegir el icono a mano ─────────────── */
 
-  /* Van uno a uno en la lista: si se parte una cadena carácter a carácter,
-     los emojis con modificador (🏖️, ⛰️…) se rompen en dos trozos */
-  var SUGERENCIAS = {
-    comida: ['🍌', '🍎', '🍐', '🍊', '🍋', '🍓', '🍇', '🍉', '🍈', '🍑', '🍒', '🫐',
-      '🥝', '🥭', '🍍', '🥥', '🥑', '🍅', '🥕', '🥦', '🥬', '🥒', '🌽', '🥔', '🍠',
-      '🧅', '🧄', '🍆', '🫑', '🫘', '🥜', '🌰', '🍄', '🍚', '🍝', '🍜', '🍞', '🥖',
-      '🥐', '🥣', '🥛', '🧀', '🥚', '🍳', '🍗', '🍖', '🥩', '🐟', '🍤', '🫒', '🧈',
-      '🍪', '🍯', '🥤', '💧', '🥗', '🍫', '🎂', '🍽️'],
-    lugar: ['🌳', '🌲', '🌴', '🌱', '🌾', '🏖️', '🌊', '🏊', '🏞️', '⛰️', '🏔️', '🏕️',
-      '⛺', '🏛️', '📚', '🎬', '🎭', '🎪', '🦁', '🐠', '🐴', '🚜', '🎡', '🎠', '🛝',
-      '⛲', '🍽️', '☕', '🧺', '🛒', '🛍️', '🏠', '🏘️', '🏙️', '🏨', '⛵', '🚂', '✈️',
-      '🚗', '🚌', '🩺', '🏥', '🏫', '🧸', '⛪', '🏰', '🌉', '🗼', '🔭', '❄️', '🚶',
-      '🥾', '📍']
-  };
-
   var emojiIdx = -1;
 
   function abrirSelectorEmoji(i) {
@@ -2329,13 +2297,11 @@
     var a = formAlimentos[i];
     $('emoji-titulo').textContent = 'Icono para «' + a.n + '»';
     $('emoji-propio').value = '';
-    var lista = SUGERENCIAS[formTipo === 'lugar' ? 'lugar' : 'comida'];
-    $('rejilla-emojis').innerHTML = lista.map(function (e) {
-      return '<button class="emoji-btn" data-elegir="' + esc(e) + '">' + esc(e) + '</button>';
-    }).join('');
     $('hoja').classList.remove('abierta');
     $('overlay').classList.add('abierta');
     $('hoja-emoji').classList.add('abierta');
+    /* Abrimos el teclado directamente, para no tener que tocar otra vez */
+    try { $('emoji-propio').focus(); } catch (e) {}
   }
 
   function ponerEmoji(e) {
@@ -2352,11 +2318,6 @@
     $('overlay').classList.add('abierta');
     $('hoja').classList.add('abierta');
   }
-
-  $('rejilla-emojis').addEventListener('click', function (ev) {
-    var b = ev.target.closest('[data-elegir]');
-    if (b) ponerEmoji(b.dataset.elegir);
-  });
 
   /* Coge el primer símbolo completo, aunque lleve modificadores */
   function primerSimbolo(txt) {
@@ -2908,7 +2869,9 @@
     var el = $('sync-chip');
     if (!el) return;
     clearTimeout(chipTimer);
-    if (encendido) {
+    /* Si estás tirando hacia abajo ya ves la ruedecita: no hace falta
+       enseñar además el cartelito, sería decir lo mismo dos veces */
+    if (encendido && !tiroEnMarcha) {
       chipTimer = setTimeout(function () { el.classList.add('visible'); }, 400);
     } else {
       el.classList.remove('visible');
