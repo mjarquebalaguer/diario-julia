@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>&#129379;</text></svg>">
-<title>Primeros alimentos de Júlia 👶🏻</title>
+<title>Diario de Júlia 👶🏻</title>
 
 <style>
   @font-face {
@@ -39,6 +39,12 @@
     --coral: #F2AF9F;
     --on-coral: #5C3026;
     --coral-ink: #A85843;
+    --dia-encanto: #F6D06B;
+    --dia-bien: #A2CE84;
+    --dia-regular: #D8D3C6;
+    --dia-mal: #EE9C86;
+    --dia-suelto: #FFFFFF;
+    --dia-texto: #33402C;
     --green: #5A7A42;
     --green-soft: #EDF4E1;
     --regular-soft: #EFF0E8;
@@ -66,6 +72,12 @@
       --coral: #E8A091;
       --on-coral: #33201B;
       --coral-ink: #F0B3A5;
+      --dia-encanto: #C9A43C;
+      --dia-bien: #7FAF63;
+      --dia-regular: #7C7D71;
+      --dia-mal: #C97759;
+      --dia-suelto: #46503F;
+      --dia-texto: #1C2417;
       --green: #B4D19C;
       --green-soft: #37422E;
       --regular-soft: #3A4235;
@@ -93,6 +105,12 @@
     --coral: #F2AF9F;
     --on-coral: #5C3026;
     --coral-ink: #A85843;
+    --dia-encanto: #F6D06B;
+    --dia-bien: #A2CE84;
+    --dia-regular: #D8D3C6;
+    --dia-mal: #EE9C86;
+    --dia-suelto: #FFFFFF;
+    --dia-texto: #33402C;
     --green: #5A7A42;
     --green-soft: #EDF4E1;
     --regular-soft: #EFF0E8;
@@ -119,6 +137,12 @@
     --coral: #E8A091;
     --on-coral: #33201B;
     --coral-ink: #F0B3A5;
+    --dia-encanto: #C9A43C;
+    --dia-bien: #7FAF63;
+    --dia-regular: #7C7D71;
+    --dia-mal: #C97759;
+    --dia-suelto: #46503F;
+    --dia-texto: #1C2417;
     --green: #B4D19C;
     --green-soft: #37422E;
     --regular-soft: #3A4235;
@@ -347,61 +371,37 @@
     font-variant-numeric: tabular-nums;
   }
 
-  .dia-celda.con-foto .num-dia {
-    color: #fff;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, .7);
-  }
-
-  .dia-celda .foto-dia {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform-origin: center center;
-  }
-
-  .dia-celda .velo {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,.28), rgba(0,0,0,.05) 45%, rgba(0,0,0,.3));
-  }
-
   .dia-celda .emojis-dia {
     position: absolute;
     inset: 0;
     display: grid;
     place-items: center;
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     line-height: 1;
     z-index: 2;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, .45);
   }
 
-  .dia-celda .tira {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 5px;
-    z-index: 2;
-  }
+  /* El día entero se tiñe según qué tal le fue */
+  .dia-celda.r-encanto { background: var(--dia-encanto); }
+  .dia-celda.r-bien    { background: var(--dia-bien); }
+  .dia-celda.r-regular { background: var(--dia-regular); }
+  .dia-celda.r-mal     { background: var(--dia-mal); }
+  .dia-celda.r-sin     { background: var(--dia-suelto); }
 
-  .tira.encanto { background: var(--crema); }
-  .tira.bien    { background: var(--salvia); }
-  .tira.regular { background: var(--ink-soft); }
-  .tira.mal     { background: var(--danger); }
+  .dia-celda.r-encanto .num-dia,
+  .dia-celda.r-bien .num-dia,
+  .dia-celda.r-regular .num-dia,
+  .dia-celda.r-mal .num-dia { color: var(--dia-texto); opacity: .75; }
 
   .dia-celda.hoy { outline: 2.5px solid var(--accent); outline-offset: -2.5px; }
 
   .dia-celda.futuro {
-    background: var(--regular-soft);
-    border: 1.5px dashed var(--line);
+    border: 1.5px dashed var(--ink-soft);
     box-shadow: none;
+    opacity: .78;
   }
 
-  .dia-celda.futuro .foto-dia,
-  .dia-celda.futuro .emojis-dia { filter: grayscale(.85); opacity: .75; }
+  .dia-celda.futuro .emojis-dia { filter: grayscale(.7); }
 
   .leyenda {
     display: flex;
@@ -417,11 +417,17 @@
   .leyenda span { display: inline-flex; align-items: center; gap: 5px; }
 
   .leyenda i {
-    width: 14px;
-    height: 8px;
-    border-radius: 3px;
+    width: 15px;
+    height: 15px;
+    border-radius: 5px;
     display: inline-block;
+    border: 1px solid rgba(0, 0, 0, .08);
   }
+
+  .muestra.encanto { background: var(--dia-encanto); }
+  .muestra.bien    { background: var(--dia-bien); }
+  .muestra.regular { background: var(--dia-regular); }
+  .muestra.mal     { background: var(--dia-mal); }
 
   /* Tarjetas dentro de la hoja de un día */
   #dentro-dia .dia { box-shadow: none; border: 1.5px solid var(--line); }
@@ -1258,8 +1264,8 @@
 <header class="top">
   <div class="cabecera-fila">
     <div class="cabecera-texto">
-      <h1 class="display">Primeros alimentos de Júlia 👶🏻</h1>
-      <p class="subtitulo">Su diario de descubrimientos, bocado a bocado</p>
+      <h1 class="display">Diario de Júlia 👶🏻</h1>
+      <p class="subtitulo">Sus descubrimientos, día a día</p>
     </div>
     <button class="btn-ajustes" id="btn-ajustes" aria-label="Ajustes">⚙️</button>
   </div>
@@ -1697,12 +1703,6 @@
         continue;
       }
 
-      /* La foto del día: la primera que encontremos */
-      var foto = null;
-      delDia.forEach(function (e) {
-        if (!foto && e.fotos && e.fotos.length) foto = normFoto(e.fotos[0]);
-      });
-
       /* Los emojis de ese día, sin repetir */
       var vistos = {};
       var emojis = [];
@@ -1718,13 +1718,10 @@
         if (e.reaccion && (!mejor || ORDEN_REACCION[e.reaccion] > ORDEN_REACCION[mejor])) mejor = e.reaccion;
       });
 
-      celdas += '<button class="dia-celda' + (foto ? ' con-foto' : '') + (esHoy ? ' hoy' : '') +
+      celdas += '<button class="dia-celda r-' + (mejor || 'sin') + (esHoy ? ' hoy' : '') +
         (esFuturo ? ' futuro' : '') + '" data-dia="' + iso + '">' +
-        (foto ? '<img class="foto-dia" src="' + foto.src + '" alt="" style="' + estiloFoto(foto) + '" loading="lazy">' +
-          '<span class="velo"></span>' : '') +
         '<span class="num-dia">' + d + '</span>' +
         '<span class="emojis-dia">' + esc(emojis.slice(0, 2).join('')) + '</span>' +
-        (mejor ? '<span class="tira ' + mejor + '"></span>' : '') +
       '</button>';
     }
 
@@ -1739,10 +1736,10 @@
       '<div class="semana-cabecera"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>' +
       '<div class="rejilla-mes">' + celdas + '</div>' +
       '<div class="leyenda">' +
-        '<span><i class="tira encanto"></i>¡Le encantó!</span>' +
-        '<span><i class="tira bien"></i>Le gustó</span>' +
-        '<span><i class="tira regular"></i>Así así</span>' +
-        '<span><i class="tira mal"></i>No le gustó</span>' +
+        '<span><i class="muestra encanto"></i>¡Le encantó!</span>' +
+        '<span><i class="muestra bien"></i>Le gustó</span>' +
+        '<span><i class="muestra regular"></i>Así así</span>' +
+        '<span><i class="muestra mal"></i>No le gustó</span>' +
       '</div>';
   }
 
