@@ -2299,11 +2299,19 @@
 
   /* ── Elegir el icono a mano ─────────────── */
 
+  /* Van uno a uno en la lista: si se parte una cadena carácter a carácter,
+     los emojis con modificador (🏖️, ⛰️…) se rompen en dos trozos */
   var SUGERENCIAS = {
-    comida: ('🍌🍎🍐🍊🍓🍇🍉🍈🍑🍒🥝🥭🍍🥥🥑🍅🥕🥦🥬🥒🌽🥔🍠🧅🧄🍆🫑🫘🥜🌰🍄' +
-      '🍚🍝🍜🍞🥖🥐🥣🥛🧀🥚🍳🍗🍖🥩🐟🍤🫒🍪🍯🧈🥤💧🍽️🥗🫐🍋🍫🎂').match(/./gu),
-    lugar: ('🌳🌲🌴🏖️🌊🏊🏞️⛰️🏔️🏕️⛺🏛️📚🎬🎭🦁🐠🐴🚜🎡🎠🛝🍽️☕🧺🛒🛍️' +
-      '🏠🏘️🏙️🏨⛵🚂✈️🚗🚌🩺🏥🏫🧸⛪🏰🌉🗼🔭❄️🌾🌱⛲🚶🥾🎪📍').match(/./gu)
+    comida: ['🍌', '🍎', '🍐', '🍊', '🍋', '🍓', '🍇', '🍉', '🍈', '🍑', '🍒', '🫐',
+      '🥝', '🥭', '🍍', '🥥', '🥑', '🍅', '🥕', '🥦', '🥬', '🥒', '🌽', '🥔', '🍠',
+      '🧅', '🧄', '🍆', '🫑', '🫘', '🥜', '🌰', '🍄', '🍚', '🍝', '🍜', '🍞', '🥖',
+      '🥐', '🥣', '🥛', '🧀', '🥚', '🍳', '🍗', '🍖', '🥩', '🐟', '🍤', '🫒', '🧈',
+      '🍪', '🍯', '🥤', '💧', '🥗', '🍫', '🎂', '🍽️'],
+    lugar: ['🌳', '🌲', '🌴', '🌱', '🌾', '🏖️', '🌊', '🏊', '🏞️', '⛰️', '🏔️', '🏕️',
+      '⛺', '🏛️', '📚', '🎬', '🎭', '🎪', '🦁', '🐠', '🐴', '🚜', '🎡', '🎠', '🛝',
+      '⛲', '🍽️', '☕', '🧺', '🛒', '🛍️', '🏠', '🏘️', '🏙️', '🏨', '⛵', '🚂', '✈️',
+      '🚗', '🚌', '🩺', '🏥', '🏫', '🧸', '⛪', '🏰', '🌉', '🗼', '🔭', '❄️', '🚶',
+      '🥾', '📍']
   };
 
   var emojiIdx = -1;
@@ -2342,16 +2350,22 @@
     if (b) ponerEmoji(b.dataset.elegir);
   });
 
+  /* Coge el primer símbolo completo, aunque lleve modificadores */
+  function primerSimbolo(txt) {
+    var t = (txt || '').trim();
+    if (!t) return '';
+    try {
+      if (window.Intl && Intl.Segmenter) {
+        var trozos = new Intl.Segmenter('es', { granularity: 'grapheme' }).segment(t);
+        for (var trozo of trozos) return trozo.segment;
+      }
+    } catch (e) {}
+    return t;
+  }
+
   $('emoji-propio').addEventListener('input', function () {
-    var v = this.value.trim();
-    if (!v) return;
-    /* Nos quedamos con el primer símbolo que haya escrito */
-    var trozos = v.match(/./gu);
-    if (trozos && trozos.length) {
-      var e = trozos[0];
-      /* Si es un emoji de los que llevan modificador, cogemos el grupo entero */
-      ponerEmoji(v.length <= 4 ? v : e);
-    }
+    var e = primerSimbolo(this.value);
+    if (e) ponerEmoji(e);
   });
 
   $('emoji-auto').addEventListener('click', function () {
