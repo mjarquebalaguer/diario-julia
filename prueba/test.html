@@ -328,9 +328,6 @@
     gap: 5px;
   }
 
-  /* Las filas se ajustan a la celda para que todos los días
-     salgan cuadrados y del mismo tamaño */
-  .rejilla-mes { grid-auto-rows: min-content; }
 
   .semana-cabecera {
     margin-bottom: 6px;
@@ -3172,9 +3169,13 @@
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') +
           '-' + String(d.getDate()).padStart(2, '0');
       }
-      var hoyN = hoy.getDate();
-      var libres = [];
-      for (var k = 1; k <= 26 && libres.length < 4; k++) if (k !== hoyN) libres.push(k);
+      /* Las caritas van al mes ANTERIOR: así son días pasados de verdad
+         (los futuros salen grises a propósito y no valdrían para comparar) */
+      function mesPasado(n) {
+        var d = new Date(hoy.getFullYear(), hoy.getMonth() - 1, n);
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') +
+          '-' + String(d.getDate()).padStart(2, '0');
+      }
 
       async function apunta(cosa, reaccion, fecha, esperado) {
         toca($('btn-nueva'));
@@ -3192,8 +3193,8 @@
         await esperar(120);
       }
 
-      var dEnc = dm(libres[0]), dBien = dm(libres[1]), dReg = dm(libres[2]), dMal = dm(libres[3]);
-      var dSin = dm(hoyN);
+      var dEnc = mesPasado(5), dBien = mesPasado(10), dReg = mesPasado(15), dMal = mesPasado(20);
+      var dSin = dm(hoy.getDate());
       var futuro = new Date(hoy.getTime() + 3 * 86400000);
       var dFut = futuro.getFullYear() + '-' + String(futuro.getMonth() + 1).padStart(2, '0') +
         '-' + String(futuro.getDate()).padStart(2, '0');
@@ -3209,25 +3210,34 @@
       await esperar(450);
       var panel = $('panel');
 
-      /* --- 1. Colores bien diferenciados --- */
+      /* Del mes actual anotamos los colores AHORA: al cambiar de mes se
+         repinta la rejilla y esos elementos dejan de existir */
+      var cSin0 = panel.querySelector('[data-dia="' + dSin + '"]');
+      var cFut0 = panel.querySelector('[data-dia="' + dFut + '"]');
+      var gSin = cSin0 && rgb(cSin0);
+      var gPlan = cFut0 && rgb(cFut0);
+      var futuroEsGris = cFut0 && cFut0.classList.contains('futuro');
+      var hoySinCarita = cSin0 && cSin0.classList.contains('r-sin');
+
+      /* Nos vamos al mes anterior a mirar las cuatro caritas */
+      toca(panel.querySelector('[data-mes="-1"]'));
+      await esperar(350);
       var cEnc = panel.querySelector('[data-dia="' + dEnc + '"]');
       var cBien = panel.querySelector('[data-dia="' + dBien + '"]');
       var cReg = panel.querySelector('[data-dia="' + dReg + '"]');
       var cMal = panel.querySelector('[data-dia="' + dMal + '"]');
-      var cSin = panel.querySelector('[data-dia="' + dSin + '"]');
-      var cFut = panel.querySelector('[data-dia="' + dFut + '"]');
-      var cVacio = panel.querySelector('.dia-celda.vacio:not(.fuera)');
 
-      ok('celdas-localizadas', cEnc && cBien && cReg && cMal && cSin && cFut,
-        [!!cEnc, !!cBien, !!cReg, !!cMal, !!cSin, !!cFut].join(','));
+      ok('celdas-localizadas', cEnc && cBien && cReg && cMal && cSin0 && cFut0,
+        [!!cEnc, !!cBien, !!cReg, !!cMal, !!cSin0, !!cFut0].join(','));
+      ok('hoy-sin-carita-marcado', hoySinCarita);
+      ok('futuro-marcado', futuroEsGris);
 
       /* El planeado tiene que ser GRIS, no blanco */
-      var gPlan = rgb(cFut);
       ok('planeado-es-gris', gPlan && Math.abs(gPlan[0] - gPlan[1]) < 18 &&
         Math.abs(gPlan[1] - gPlan[2]) < 18 && gPlan[0] < 225 && gPlan[0] > 80,
-        fondo(cFut));
+        gPlan && gPlan.join(','));
       ok('planeado-no-es-blanco', gPlan && !(gPlan[0] > 245 && gPlan[1] > 245 && gPlan[2] > 245),
-        fondo(cFut));
+        gPlan && gPlan.join(','));
 
       /* El "así así" ya no es gris */
       var gReg = rgb(cReg);
@@ -3235,14 +3245,15 @@
 
       /* Los cinco fondos deben distinguirse bien entre sí */
       var pares = [
-        ['encanto-vs-bien', cEnc, cBien], ['encanto-vs-regular', cEnc, cReg],
-        ['encanto-vs-mal', cEnc, cMal], ['bien-vs-regular', cBien, cReg],
-        ['bien-vs-mal', cBien, cMal], ['regular-vs-mal', cReg, cMal],
-        ['regular-vs-planeado', cReg, cFut], ['sin-vs-planeado', cSin, cFut]
+        ['encanto-vs-bien', rgb(cEnc), rgb(cBien)], ['encanto-vs-regular', rgb(cEnc), rgb(cReg)],
+        ['encanto-vs-mal', rgb(cEnc), rgb(cMal)], ['bien-vs-regular', rgb(cBien), rgb(cReg)],
+        ['bien-vs-mal', rgb(cBien), rgb(cMal)], ['regular-vs-mal', rgb(cReg), rgb(cMal)],
+        ['regular-vs-planeado', rgb(cReg), gPlan], ['sin-vs-planeado', gSin, gPlan],
+        ['encanto-vs-planeado', rgb(cEnc), gPlan]
       ];
       var flojos = [];
       pares.forEach(function (p) {
-        var d = distancia(rgb(p[1]), rgb(p[2]));
+        var d = distancia(p[1], p[2]);
         if (d < 70) flojos.push(p[0] + '=' + d);
       });
       ok('todos-los-colores-se-distinguen', flojos.length === 0, flojos.join(' '));
@@ -3272,14 +3283,14 @@
 
       /* Comparamos una con icono y una vacía */
       var rIcono = cEnc.getBoundingClientRect();
-      var rVacio = cVacio.getBoundingClientRect();
+      var rVacio = panel.querySelector('.dia-celda.vacio:not(.fuera)').getBoundingClientRect();
       ok('icono-igual-que-vacia',
         Math.abs(rIcono.height - rVacio.height) <= 1.5 && Math.abs(rIcono.width - rVacio.width) <= 1.5,
         Math.round(rIcono.width) + 'x' + Math.round(rIcono.height) + ' vs ' +
         Math.round(rVacio.width) + 'x' + Math.round(rVacio.height));
 
       /* --- 3. Cerrar la hoja deslizando hacia abajo --- */
-      toca(cEnc);
+      toca(panel.querySelector('[data-dia="' + dEnc + '"]'));
       await esperar(350);
       ok('dia-abre', $('hoja-dia').classList.contains('abierta'));
       var agarre = $('hoja-dia').querySelector('.agarre');
