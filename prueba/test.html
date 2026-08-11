@@ -3444,6 +3444,10 @@
       toca($('ver-diario'));
       await esperar(300);
       var vd = $('panel').textContent;
+      R.push('DIAG comidaSel=' + $('tab-comida').getAttribute('aria-selected') +
+        ' lugarSel=' + $('tab-lugar').getAttribute('aria-selected') +
+        ' vista=' + $('ver-diario').getAttribute('aria-selected') +
+        ' panel=' + vd.replace(/\s+/g, ' ').slice(0, 90));
       ok('diario-tiene-lo-probado', vd.indexOf('Platano') >= 0);
       ok('diario-SIN-lo-planeado', vd.indexOf('Kiwi') < 0, 'sale el kiwi');
       ok('diario-una-tarjeta', $('panel').querySelectorAll('article.dia').length === 1,
