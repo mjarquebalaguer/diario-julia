@@ -3487,7 +3487,9 @@
         vac.slice(0, 120));
 
       /* --- Las llaves guardadas llevan su apellido --- */
-      localStorage.setItem('marca-de-prueba', '1');
+      /* Fingimos estar conectadas para ver qué repositorio nombra Ajustes */
+      localStorage.setItem(esLena ? 'dj-github-lena' : 'dj-github',
+        JSON.stringify({ token: 'x', login: 'mjarquebalaguer' }));
       toca($('tab-comida'));
       await esperar(150);
       toca($('btn-ajustes'));
@@ -3495,12 +3497,10 @@
       ok('ajustes-nombra-su-repo',
         $('dentro-ajustes').textContent.indexOf(esLena ? 'diario-lena-datos' : 'diario-julia-datos') >= 0,
         $('dentro-ajustes').textContent.slice(0, 140));
+      ok('ajustes-no-nombra-el-otro',
+        $('dentro-ajustes').textContent.indexOf(esLena ? 'diario-julia-datos' : 'diario-lena-datos') < 0);
       toca($('overlay'));
       await esperar(250);
-
-      /* Simulamos que se conecta y miramos con qué nombre se guarda la clave */
-      localStorage.setItem(esLena ? 'dj-github-lena' : 'dj-github',
-        JSON.stringify({ token: 'x', login: 'mjarquebalaguer' }));
       var claves = Object.keys(localStorage).filter(function (k) { return k.indexOf('dj-') === 0; });
       ok('llave-con-su-nombre',
         esLena ? claves.indexOf('dj-github-lena') >= 0 : claves.indexOf('dj-github') >= 0,
