@@ -11,6 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>&#129379;</text></svg>">
+<script>window.PERFIL = { nombre: "Júlia", clave: "julia", repo: "diario-julia-datos", dueno: "mjarquebalaguer" };</script>
 <title>Diario de Júlia 👶🏻</title>
 
 <style>
@@ -1477,6 +1478,24 @@
 (function () {
   'use strict';
 
+  /* ── De quién es este diario ────────────────
+     Cada bebé tiene su propia dirección web, su propio almacén en el móvil
+     y su propio repositorio de datos, así nunca se mezclan. El perfil lo
+     pone la página al generarse; si no, es el de Júlia (el original). */
+  var PERFIL = window.PERFIL || {};
+  var BEBE = {
+    nombre: PERFIL.nombre || 'Júlia',
+    clave: PERFIL.clave || 'julia',
+    repo: PERFIL.repo || 'diario-julia-datos',
+    dueno: PERFIL.dueno || ''
+  };
+
+  /* El diario original ya guardaba con estos nombres: se los dejamos tal cual
+     para no perder nada, y los demás bebés llevan su apellido */
+  function llave(base) {
+    return BEBE.clave === 'julia' ? base : base + '-' + BEBE.clave;
+  }
+
   /* ── Emojis automáticos ─────────────────── */
   var EMOJIS = {
     platano: '🍌', banana: '🍌', agua: '💧', calabacin: '🥒', pepino: '🥒',
@@ -1650,7 +1669,7 @@
 
   function abrirDB() {
     return new Promise(function (res, rej) {
-      var pet = indexedDB.open('diario-julia', 1);
+      var pet = indexedDB.open('diario-' + BEBE.clave, 1);
       pet.onupgradeneeded = function () {
         pet.result.createObjectStore('entradas', { keyPath: 'id' });
       };
@@ -1809,8 +1828,8 @@
 
     if (!propias.length) {
       return esL
-        ? '<div class="vacio"><span class="icono">📍</span>Todavía no hay ninguna salida apuntada.<br>Toca el botón <strong>＋</strong> para apuntar el primer sitio que ha conocido Júlia.</div>'
-        : '<div class="vacio"><span class="icono">🥣</span>Todavía no hay nada apuntado.<br>Toca el botón <strong>＋</strong> para apuntar la primera comida de Júlia.</div>';
+        ? '<div class="vacio"><span class="icono">📍</span>Todavía no hay ninguna salida apuntada.<br>Toca el botón <strong>＋</strong> para apuntar el primer sitio que ha conocido ' + esc(BEBE.nombre) + '.</div>'
+        : '<div class="vacio"><span class="icono">🥣</span>Todavía no hay nada apuntado.<br>Toca el botón <strong>＋</strong> para apuntar la primera comida de ' + esc(BEBE.nombre) + '.</div>';
     }
 
     var visibles = ordenadas(propias).filter(function (e) {
@@ -2009,8 +2028,8 @@
     var vacio = filtro
       ? '<div class="vacio"><span class="icono">🔍</span>Nada con esa carita todavía.<br>Prueba con otro filtro.</div>'
       : (esL
-        ? '<div class="vacio"><span class="icono">📍</span>Cuando apuntes una salida, aquí saldrá la lista de todos los sitios que Júlia ha conocido, en orden.</div>'
-        : '<div class="vacio"><span class="icono">🥕</span>Cuando apuntes comidas, aquí saldrá la lista de todo lo que Júlia ha probado, en orden.</div>');
+        ? '<div class="vacio"><span class="icono">📍</span>Cuando apuntes una salida, aquí saldrá la lista de todos los sitios que ' + esc(BEBE.nombre) + ' ha conocido, en orden.</div>'
+        : '<div class="vacio"><span class="icono">🥕</span>Cuando apuntes comidas, aquí saldrá la lista de todo lo que ' + esc(BEBE.nombre) + ' ha probado, en orden.</div>');
 
     return '<div class="filtros">' + botonesFiltro(tipo, filtro) + '</div>' +
       (filas ? '<div class="lista-alimentos">' + filas + '</div>' : vacio);
@@ -3032,27 +3051,27 @@
   /* ── Sincronización con GitHub ──────────── */
 
   var GH = 'https://api.github.com';
-  var REPO_DATOS = 'diario-julia-datos';
+  var REPO_DATOS = BEBE.repo;
   var EN_CLAUDE = /claude/i.test(location.hostname);
   var estadoTexto = '';
   var sincronizando = false;
   var resincronizar = false;
 
   function cfg() {
-    try { return JSON.parse(localStorage.getItem('dj-github') || 'null'); } catch (e) { return null; }
+    try { return JSON.parse(localStorage.getItem(llave('dj-github')) || 'null'); } catch (e) { return null; }
   }
   function guardarCfg(c) {
-    if (c) localStorage.setItem('dj-github', JSON.stringify(c));
-    else localStorage.removeItem('dj-github');
+    if (c) localStorage.setItem(llave('dj-github'), JSON.stringify(c));
+    else localStorage.removeItem(llave('dj-github'));
   }
   function shas() {
-    try { return JSON.parse(localStorage.getItem('dj-shas') || '{}'); } catch (e) { return {}; }
+    try { return JSON.parse(localStorage.getItem(llave('dj-shas')) || '{}'); } catch (e) { return {}; }
   }
-  function guardarShas(s) { localStorage.setItem('dj-shas', JSON.stringify(s)); }
+  function guardarShas(s) { localStorage.setItem(llave('dj-shas'), JSON.stringify(s)); }
   function tumbas() {
-    try { return JSON.parse(localStorage.getItem('dj-borradas') || '{}'); } catch (e) { return {}; }
+    try { return JSON.parse(localStorage.getItem(llave('dj-borradas')) || '{}'); } catch (e) { return {}; }
   }
-  function guardarTumbas(t) { localStorage.setItem('dj-borradas', JSON.stringify(t)); }
+  function guardarTumbas(t) { localStorage.setItem(llave('dj-borradas'), JSON.stringify(t)); }
 
   function cabeceras(token) {
     return {
@@ -3240,10 +3259,13 @@
     var btn = $('btn-conectar');
     if (btn) { btn.disabled = true; btn.textContent = '⏳ Conectando…'; }
     var login = null;
+    /* Con una clave limitada a un solo repositorio puede que no deje
+       preguntar quién eres; en ese caso usamos el dueño que ya sabemos */
     fetch(GH + '/user', { headers: cabeceras(token), cache: 'no-store' })
-      .then(function (r) { if (!r.ok) throw new Error('clave'); return r.json(); })
+      .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (u) {
-        login = u.login;
+        login = (u && u.login) || BEBE.dueno;
+        if (!login) throw new Error('clave');
         return fetch(GH + '/repos/' + login + '/' + REPO_DATOS, { headers: cabeceras(token), cache: 'no-store' });
       })
       .then(function (r) {
@@ -3251,7 +3273,7 @@
           return fetch(GH + '/user/repos', {
             method: 'POST',
             headers: cabeceras(token),
-            body: JSON.stringify({ name: REPO_DATOS, private: true, auto_init: true, description: 'Datos privados del diario de alimentos de Júlia' })
+            body: JSON.stringify({ name: REPO_DATOS, private: true, auto_init: true, description: 'Datos privados del diario de ' + BEBE.nombre })
           }).then(function (r2) { if (!r2.ok) throw new Error('crear'); });
         }
         if (!r.ok) throw new Error('clave');
@@ -3318,7 +3340,7 @@
     var d = $('btn-desconectar');
     if (d) d.addEventListener('click', function () {
       guardarCfg(null);
-      localStorage.removeItem('dj-shas');
+      localStorage.removeItem(llave('dj-shas'));
       estadoTexto = '';
       pintarAjustes();
       aviso('Desconectado. El diario sigue guardado en este dispositivo.');
