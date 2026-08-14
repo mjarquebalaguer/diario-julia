@@ -3489,7 +3489,7 @@
       $('campo-fecha').value = dia;
 
       /* --- Cosas SIN emoji propio: deben salir con su inicial --- */
-      var sinEmoji = ['higo', 'chirimoya', 'caqui', 'membrillo', 'alcachofa2', 'quinoa2'];
+      var sinEmoji = ['higo', 'chirimoya', 'caqui', 'membrillo', 'rambutan', 'chayote'];
       var fallos = [];
       for (var i = 0; i < sinEmoji.length; i++) {
         $('campo-alimento').value = sinEmoji[i];
@@ -3539,10 +3539,10 @@
       /* --- Guardamos y lo comprobamos en diario, lista y calendario --- */
       toca($('btn-guardar'));
       await hasta(function () { return !abierta('hoja'); }, 200);
-      await esperar(300);
-
       toca($('ver-diario'));
-      await esperar(300);
+      /* Con tiempo virtual la base de datos tarda: esperamos a que aparezca */
+      await hasta(function () { return $('panel').querySelector('article.dia'); }, 250);
+      await esperar(250);
       ok('diario-pinta-la-inicial', !!$('panel').querySelector('.chip .ini'),
         $('panel').querySelector('.chip') ? $('panel').querySelector('.chip').textContent : 'sin chips');
       ok('diario-mantiene-emojis', $('panel').textContent.indexOf('🍌') >= 0);
