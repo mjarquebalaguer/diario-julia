@@ -1175,6 +1175,31 @@
 
   /* ── Lugares ──────────────────────────────── */
 
+  /* Iniciales: para lo que no tiene emoji propio */
+  .ini {
+    display: inline-grid;
+    place-items: center;
+    width: 1.35em;
+    height: 1.35em;
+    border-radius: 50%;
+    background: var(--card);
+    color: var(--ink);
+    border: 1px solid rgba(0, 0, 0, .1);
+    font-size: .74em;
+    font-weight: 800;
+    line-height: 1;
+    vertical-align: middle;
+  }
+
+  .emojis-dia .ini {
+    width: 1.5em;
+    height: 1.5em;
+    font-size: .62em;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .18);
+  }
+
+  .emojis-dia .ini + .ini { margin-left: 2px; }
+
   .chip.lugar { background: var(--coral); color: var(--on-coral); }
 
   .stat.coral .num { color: var(--coral); }
@@ -1506,7 +1531,7 @@
     pan: '🍞', avena: '🥣', cereal: '🥣', quinoa: '🥣', lenteja: '🫘',
     garbanzo: '🫘', alubia: '🫘', pollo: '🍗', pavo: '🍗', ternera: '🥩',
     cerdo: '🥩', cordero: '🥩', pescado: '🐟', merluza: '🐟', salmon: '🐟',
-    lenguado: '🐟', huevo: '🥚', yogur: '🥛', leche: '🥛', queso: '🧀',
+    lenguado: '🐟', huevo: '🥚', leche: '🥛', queso: '🧀',
     fresa: '🍓', naranja: '🍊', mandarina: '🍊', melocoton: '🍑',
     albaricoque: '🍑', nectarina: '🍑', ciruela: '🍑', uva: '🍇',
     sandia: '🍉', melon: '🍈', kiwi: '🥝', mango: '🥭', cereza: '🍒',
@@ -1517,16 +1542,15 @@
     galleta: '🍪', puerro: '🧅', mantequilla: '🧈', tortilla: '🍳',
     almendra: '🥜', cacahuete: '🥜', nuez: '🥜', crema: '🥣', pure: '🥣',
 
-    /* Más frutas */
-    nispero: '🍑', chirimoya: '🍈', granada: '🍎', higo: '🫐', caqui: '🍅',
-    papaya: '🥭', maracuya: '🥭', lima: '🍋', pomelo: '🍊', membrillo: '🍐',
-    coco: '🥥', datil: '🫐', pasa: '🍇', ciruelapasa: '🍇', frutadelbosque: '🫐',
-    macedonia: '🍓', compota: '🍎',
+    /* Más frutas. Ojo: solo ponemos emoji cuando de verdad se parece;
+       si no existe (higo, chirimoya, caqui…) sale la inicial, que engaña menos */
+    lima: '🍋', pomelo: '🍊', coco: '🥥', pasa: '🍇', ciruelapasa: '🍇',
+    frutadelbosque: '🫐', macedonia: '🍓', compota: '🍎',
 
     /* Más verduras */
-    nabo: '🥔', apio: '🥬', rabanito: '🌶️', rabano: '🌶️', alcachofa: '🌿',
+    nabo: '🥔', apio: '🥬',
     haba: '🫛', berza: '🥬', escarola: '🥬', canonigo: '🥬', rucula: '🥬',
-    endibia: '🥬', cardo: '🌿', chirivia: '🥕', hinojo: '🌿', perejil: '🌿',
+    endibia: '🥬', chirivia: '🥕', perejil: '🌿',
     albahaca: '🌿', menta: '🌿', jengibre: '🫚', cilantro: '🌿', verdura: '🥦',
 
     /* Cereales y farináceos */
@@ -1547,18 +1571,17 @@
     tortillafrancesa: '🍳', clara: '🥚', yema: '🥚',
 
     /* Lácteos */
-    requeson: '🧀', cuajada: '🥛', kefir: '🥛', nata: '🥛', natilla: '🍮',
+    requeson: '🧀', natilla: '🍮',
     flan: '🍮', helado: '🍦', batido: '🥤', petitsuisse: '🍮',
 
     /* Legumbres */
     soja: '🫘', edamame: '🫛', frijol: '🫘', judion: '🫘',
 
     /* Otros */
-    sal: '🧂', azucar: '🍬', canela: '🌰', vainilla: '🌼', cacao: '🍫',
-    chocolate: '🍫', miel: '🍯', zumo: '🧃', caldo: '🍲', sopa: '🍲',
-    guiso: '🍲', cocido: '🍲', paella: '🥘', pizza: '🍕', chuche: '🍬',
-    infusion: '🍵', gazpacho: '🍅', hummus: '🫘', tofu: '🧊',
-    levadura: '🌾', vinagre: '🫗', especia: '🧂'
+    sal: '🧂', azucar: '🍬', cacao: '🍫', chocolate: '🍫', miel: '🍯',
+    zumo: '🧃', caldo: '🍲', sopa: '🍲', guiso: '🍲', cocido: '🍲',
+    paella: '🥘', pizza: '🍕', chuche: '🍬', infusion: '🍵',
+    gazpacho: '🍅', vinagre: '🫗', especia: '🧂'
   };
 
   var EMOJIS_LUGAR = {
@@ -1594,6 +1617,28 @@
     return texto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
   }
 
+  /* Unicode no tiene emoji para todo (no existe el del higo, ni el del yogur…).
+     Cuando no hay uno que se parezca de verdad, usamos su inicial: así todo
+     tiene icono, se distingue, y vale para cualquier pestaña futura. */
+  function inicialDe(nombre) {
+    var t = (nombre || '').trim();
+    return t ? t.charAt(0).toLocaleUpperCase('es') : '?';
+  }
+
+  /* ¿Es una inicial (una sola letra o número) en vez de un emoji? */
+  function esInicial(e) {
+    if (!e) return false;
+    try { return new RegExp('^[\\p{L}\\p{N}]$', 'u').test(e); }
+    catch (err) { return e.length === 1 && /[A-Za-z0-9]/.test(e); }
+  }
+
+  /* Cómo se pinta un icono, sea emoji o inicial */
+  function iconoHtml(e) {
+    return esInicial(e)
+      ? '<span class="ini">' + esc(e) + '</span>'
+      : esc(e);
+  }
+
   function emojiDelMapa(nombre, tipo) {
     var mapa = tipo === 'lugar' ? EMOJIS_LUGAR : EMOJIS;
     var n = normalizar(nombre);
@@ -1602,7 +1647,7 @@
     for (var i = 0; i < claves.length; i++) {
       if (n.indexOf(claves[i]) !== -1) return mapa[claves[i]];
     }
-    return tipo === 'lugar' ? '📍' : '🍽️';
+    return inicialDe(nombre);
   }
 
   /* Si ya elegiste icono para esto alguna vez, se reutiliza el más reciente.
@@ -1911,7 +1956,7 @@
       celdas += '<button class="dia-celda r-' + (mejor || 'sin') + (esHoy ? ' hoy' : '') +
         (esFuturo ? ' futuro' : '') + '" data-dia="' + iso + '">' +
         '<span class="num-dia">' + d + '</span>' +
-        '<span class="emojis-dia">' + esc(emojis.slice(0, 2).join('')) + '</span>' +
+        '<span class="emojis-dia">' + emojis.slice(0, 2).map(iconoHtml).join('') + '</span>' +
       '</button>';
     }
 
@@ -1952,7 +1997,7 @@
       var clave = normalizar(a.n);
       var esNueva = novedad.id === e.id && novedad.claves && novedad.claves[clave];
       return '<span class="chip' + (lugar ? ' lugar' : '') + (esNueva ? ' nuevo' : '') + '">' +
-        '<span>' + esc(a.e) + '</span>' + esc(a.n) + '</span>';
+        '<span>' + iconoHtml(a.e) + '</span>' + esc(a.n) + '</span>';
     }).join('');
 
     var fotos = (e.fotos || []).map(function (f, i) {
@@ -2018,7 +2063,7 @@
     var filas = lista.map(function (a, i) {
       return '<div class="alimento-fila">' +
         '<span class="alimento-num">' + (i + 1) + '</span>' +
-        '<span class="alimento-emoji">' + esc(a.emoji) + '</span>' +
+        '<span class="alimento-emoji">' + iconoHtml(a.emoji) + '</span>' +
         '<span class="alimento-nombre">' + esc(a.nombre) + '</span>' +
         '<span class="alimento-meta">desde el ' + fechaCorta(a.primera) +
           '<br>' + a.veces + (a.veces === 1 ? ' vez' : ' veces') + '</span>' +
@@ -2186,7 +2231,7 @@
     $('chips-form').innerHTML = formAlimentos.map(function (a, i) {
       return '<span class="chip-form">' +
         '<button class="chip-emoji" data-emoji="' + i + '" aria-label="Cambiar el icono de ' + esc(a.n) + '">' +
-          esc(a.e) + '</button>' +
+          iconoHtml(a.e) + '</button>' +
         esc(a.n) +
         '<button class="chip-quitar" data-quitar="' + i + '" aria-label="Quitar ' + esc(a.n) + '">✕</button>' +
       '</span>';
