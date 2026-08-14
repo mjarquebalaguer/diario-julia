@@ -1531,7 +1531,7 @@
     pan: '🍞', avena: '🥣', cereal: '🥣', quinoa: '🥣', lenteja: '🫘',
     garbanzo: '🫘', alubia: '🫘', pollo: '🍗', pavo: '🍗', ternera: '🥩',
     cerdo: '🥩', cordero: '🥩', pescado: '🐟', merluza: '🐟', salmon: '🐟',
-    lenguado: '🐟', huevo: '🥚', yogur: '🥛', leche: '🥛', queso: '🧀',
+    lenguado: '🐟', huevo: '🥚', leche: '🥛', queso: '🧀',
     fresa: '🍓', naranja: '🍊', mandarina: '🍊', melocoton: '🍑',
     albaricoque: '🍑', nectarina: '🍑', ciruela: '🍑', uva: '🍇',
     sandia: '🍉', melon: '🍈', kiwi: '🥝', mango: '🥭', cereza: '🍒',
@@ -1548,9 +1548,9 @@
     frutadelbosque: '🫐', macedonia: '🍓', compota: '🍎',
 
     /* Más verduras */
-    nabo: '🥔', apio: '🥬', rabanito: '🌶️', rabano: '🌶️', alcachofa: '🌿',
+    nabo: '🥔', apio: '🥬',
     haba: '🫛', berza: '🥬', escarola: '🥬', canonigo: '🥬', rucula: '🥬',
-    endibia: '🥬', cardo: '🌿', chirivia: '🥕', hinojo: '🌿', perejil: '🌿',
+    endibia: '🥬', chirivia: '🥕', perejil: '🌿',
     albahaca: '🌿', menta: '🌿', jengibre: '🫚', cilantro: '🌿', verdura: '🥦',
 
     /* Cereales y farináceos */
@@ -1571,7 +1571,7 @@
     tortillafrancesa: '🍳', clara: '🥚', yema: '🥚',
 
     /* Lácteos */
-    requeson: '🧀', cuajada: '🥛', kefir: '🥛', nata: '🥛', natilla: '🍮',
+    requeson: '🧀', natilla: '🍮',
     flan: '🍮', helado: '🍦', batido: '🥤', petitsuisse: '🍮',
 
     /* Legumbres */
@@ -3489,7 +3489,7 @@
       $('campo-fecha').value = dia;
 
       /* --- Cosas SIN emoji propio: deben salir con su inicial --- */
-      var sinEmoji = ['higo', 'chirimoya', 'caqui', 'membrillo', 'rambutan', 'chayote'];
+      var sinEmoji = ['higo', 'yogur', 'caqui', 'alcachofa', 'rambutan', 'chayote'];
       var fallos = [];
       for (var i = 0; i < sinEmoji.length; i++) {
         $('campo-alimento').value = sinEmoji[i];
@@ -3506,7 +3506,8 @@
 
       /* --- Los que SÍ tienen emoji siguen con su emoji, no con letra --- */
       var conEmoji = [['platano', '🍌'], ['manzana', '🍎'], ['brocoli', '🥦'],
-        ['sardina', '🐟'], ['chocolate', '🍫'], ['sopa', '🍲']];
+        ['sardina', '🐟'], ['chocolate', '🍫'], ['sopa', '🍲'],
+        ['leche', '🥛'], ['queso', '🧀'], ['huevo', '🥚']];
       var fallos2 = [];
       var base = sinEmoji.length;
       for (var k = 0; k < conEmoji.length; k++) {
